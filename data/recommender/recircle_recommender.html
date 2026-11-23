@@ -32,7 +32,7 @@ header.band .wrap{display:flex;align-items:center;gap:16px;padding-block:18px}
 header h1{margin:0;font-size:clamp(22px,3vw,28px);font-weight:800;line-height:1.15;text-wrap:balance}
 header p{margin:2px 0 0;opacity:.9;font-size:15px}
 main.wrap{display:grid;grid-template-columns:minmax(300px,360px) 1fr;gap:22px;padding-block:22px 40px;align-items:start}
-@media (max-width:860px){main.wrap{grid-template-columns:1fr}}
+@media (max-width:860px){main.wrap{grid-template-columns:1fr}main.wrap>.results{order:-1}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:18px;min-width:0}
 @media (min-width:861px){.panel{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}}
 .panel h2{margin:0;font-size:18px;font-weight:800}
@@ -95,6 +95,88 @@ button{font:inherit;cursor:pointer}
 .section-h{margin:8px 0 0;font-size:15.5px;font-weight:800;color:var(--muted)}
 .more{align-self:center}
 footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
+.hidden{display:none!important}
+/* onboarding questionnaire */
+.onb{max-width:760px;margin:24px auto 40px}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px clamp(16px,4vw,30px) 24px}
+.qtop{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13.5px;color:var(--muted);font-weight:600}
+.prog{height:6px;background:var(--chip);border-radius:99px;overflow:hidden;margin:10px 0 18px}
+.prog i{display:block;height:100%;background:var(--orange);border-radius:99px;transition:width .25s}
+.qh{margin:0;font-size:clamp(21px,3vw,26px);font-weight:800;line-height:1.2;text-wrap:balance}
+.qsub{margin:6px 0 0;color:var(--muted)}
+.qgroup{margin-top:18px}
+.qgroup>b{display:block;font-size:15px;margin-bottom:8px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin-top:16px}
+.qgroup .opts{margin-top:0}
+.opt{border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px;text-align:start;display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt b{font-size:16px;font-weight:700}
+.opt span{font-size:13.5px;color:var(--muted)}
+.opt:hover{border-color:var(--muted)}
+.opt[aria-pressed="true"]{border-color:var(--cc,var(--teal));background:var(--chip)}
+.opt[aria-pressed="true"] b::after{content:" ✓";color:var(--cc,var(--val))}
+.opt:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.qnav{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:22px;flex-wrap:wrap}
+.btn.pri{background:var(--teal);border-color:var(--teal);color:#fff;padding:9px 20px;font-weight:700}
+.btn.link{border:0;background:none;color:var(--muted);text-decoration:underline;padding:6px 4px}
+.prof{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px 22px;margin:18px 0 0;padding:16px;background:var(--chip);border-radius:12px}
+.prof dt{color:var(--muted);font-size:12.5px}
+.prof dd{margin:0;font-weight:700}
+.prof .wide{grid-column:1/-1}
+.prof .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:3px}
+.how{margin:18px 0 0;padding:0 18px 0 0;display:flex;flex-direction:column;gap:5px}
+.preview{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.preview strong{font-size:18px;font-weight:800}
+.preview ol{margin:8px 0 0;padding:0 18px 0 0;color:var(--ink)}
+.summary .edit{margin-inline-start:auto}
+/* results: personal hero + grouped rails */
+.hero{background:linear-gradient(135deg,var(--teal),#0b4349);color:#fff;border-radius:var(--r);padding:22px clamp(16px,3vw,28px);display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset-inline-start:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:var(--orange);opacity:.18;pointer-events:none}
+.hero .kick{margin:0;font-weight:700;color:#ffd38a;font-size:15px}
+.hero h2{margin:0;font-size:clamp(23px,3.2vw,31px);font-weight:800;line-height:1.2;text-wrap:balance}
+.hero .big{color:var(--orange);font-size:1.25em;font-variant-numeric:tabular-nums}
+.hero .hsub{margin:0;font-size:16px;opacity:.95}
+.hero .hsub b{color:#ffd38a}
+.qf,.refine{display:flex;flex-wrap:wrap;gap:6px;align-items:center;position:relative;z-index:1}
+.qf button{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;border-radius:999px;padding:6px 13px;font-weight:600;font-size:14px}
+.qf button b{font-variant-numeric:tabular-nums;opacity:.85;margin-inline-start:3px}
+.qf button[aria-pressed="true"]{background:#fff;color:var(--teal);border-color:#fff}
+.refine span{font-weight:700;font-size:14px;margin-inline-end:4px}
+.refine button{border:0;background:var(--orange);color:var(--orange-ink);border-radius:999px;padding:5px 12px;font-weight:700;font-size:13.5px}
+.refine button[data-ref="redo"],.refine button[data-ref="clearfb"]{background:transparent;color:#fff;text-decoration:underline;padding-inline:6px}
+.hero .hnote{margin:0;font-size:13px;opacity:.8}
+.hero button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.grp{display:flex;flex-direction:column;gap:10px;min-width:0}
+.gh{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.gh h3{margin:0;font-size:19px;font-weight:800;display:flex;align-items:center;gap:8px}
+.gh p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.gh .dot{width:12px;height:12px;border-radius:50%;background:var(--cc);display:inline-block}
+.gn{font-size:13px;font-weight:700;background:var(--chip);color:var(--muted);border-radius:999px;padding:1px 9px;font-variant-numeric:tabular-nums}
+.gact{display:flex;gap:6px}
+.btn.sm{padding:4px 11px;font-size:13.5px}
+.btn.ghost{border-color:transparent;color:var(--muted);text-decoration:underline}
+.rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,280px);gap:12px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;overscroll-behavior-x:contain}
+.rail>.mc{scroll-snap-align:start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.mc{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--cc);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.mc.liked{box-shadow:0 0 0 2px var(--good) inset}
+.mtop{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.mscore{font-weight:800;color:var(--val);font-size:17px;font-variant-numeric:tabular-nums}
+.mscore::after{content:"%";font-size:11px;margin-inline-start:1px}
+.mc h4{margin:0;font-size:16.5px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.mc .meta{font-size:12.5px}
+.mdesc{margin:0;font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;color:var(--ink)}
+.mc .why span{font-size:12px}
+.mdet summary{cursor:pointer;font-size:13px;color:var(--val);font-weight:600}
+.mdet .facts{margin-top:6px;grid-template-columns:1fr;font-size:13px}
+.react{display:flex;gap:6px;margin-top:auto;padding-top:4px}
+.rb{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:9px;padding:6px 8px;font-weight:700;font-size:13px}
+.rb.up:hover,.rb.up[aria-pressed="true"]{background:var(--good-bg);color:var(--good);border-color:var(--good)}
+.rb.down:hover{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
+.rb:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.toast{background:var(--ink);color:var(--surface);border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-weight:600}
+.toast .btn{background:transparent;color:var(--surface);border-color:var(--surface)}
+.results{gap:22px}
+@media (prefers-reduced-motion:no-preference){.mc{animation:fade .25s ease both}}
 @media (prefers-reduced-motion:no-preference){.card{animation:fade .25s ease both}@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}}
 </style>
 
@@ -103,7 +185,9 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
   <div><h1>מה מתאים לך בתל אביב-יפו?</h1><p>ספרו לנו קצת על עצמכם, ונמליץ על עסקים, יוזמות ואירועים מקיימים לפי ההתאמה.</p></div>
 </div></header>
 
-<main class="wrap">
+<section class="wrap hidden" id="onbWrap" aria-live="polite"><div class="onb"><div class="qcard" id="qcard"></div></div></section>
+
+<main class="wrap hidden" id="app">
   <form class="panel" id="profile" autocomplete="off">
     <h2>הפרופיל שלי</h2>
 
@@ -114,7 +198,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
 
     <div class="row2">
       <fieldset><legend><label for="age">גיל</label></legend>
-        <select id="age"><option value="">לא צוין</option><option value="18">18–25</option><option value="26">26–40</option><option value="41">41–64</option><option value="65">65 ומעלה</option></select>
+        <select id="age"><option value="">לא צוין</option><option value="18">18 עד 25</option><option value="26">26 עד 40</option><option value="41">41 עד 64</option><option value="65">65 ומעלה</option></select>
       </fieldset>
       <fieldset><legend><label for="family">מצב משפחתי</label></legend>
         <select id="family"><option value="">לא צוין</option><option value="single">רווק/ה</option><option value="couple">בזוגיות, בלי ילדים</option><option value="kids">הורה לילדים</option></select>
@@ -148,9 +232,9 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
     <div class="btnrow"><button type="button" class="btn" id="reset">איפוס הפרופיל</button></div>
   </form>
 
-  <section class="results" aria-live="polite">
-    <div class="summary" id="summary"></div>
-    <div id="list" class="results"></div>
+  <section class="results">
+    <div class="hero" id="hero"></div>
+    <div id="list" class="results" aria-live="polite"></div>
   </section>
 </main>
 <footer class="wrap">המלצות לפי מאגר ReCircle v0.2 (303 רשומות ממקורות ציבוריים, תל אביב-יפו). רוב הרשומות עדיין לא אומתו, ומידע חסר מוצג כ"לא ידוע" ולא מנוחש. המרחק הוא קו אווירי ומחושב בדפדפן שלכם. הפרופיל נשמר רק בדפדפן הזה.</footer>
@@ -171,11 +255,11 @@ const DISTS=[1,2,5,10,25,0]; // 0 = no limit
 const AREAS=[["","בלי מיקום (לא לסנן לפי מרחק)"],["c","מרכז העיר",32.0820,34.7811],["nw","צפון מערב (הצפון הישן, רמת אביב)",32.1160,34.7953],["ne","צפון מזרח",32.1143,34.8245],["e","מזרח",32.0566,34.7971],["s","דרום (פלורנטין, שפירא)",32.0495,34.7734],["j","יפו",32.0524,34.7576],["pin","הנקודה שסימנתי במפה"]];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
-let DATA=[], pin=null, shown=12;
-const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming"};
+let DATA=[], BYID={}, pin=null, shown=12;
+const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming",qf:"",fb:{up:[],down:[]}};
 let st=load();
 
-function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;return Object.assign({},DEF,v)}}catch(e){}return Object.assign({},DEF,{persona:"student",cats:PERSONAS.student.cats.slice(),budget:"low",age:"18",area:"c"})}
+function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;return Object.assign({},DEF,v)}}catch(e){}return Object.assign({},DEF)}
 function save(){try{localStorage.setItem("rc-profile",JSON.stringify(Object.assign({},st,{pin})))}catch(e){}}
 
 function seg(id,name,opts,type="radio"){
@@ -212,7 +296,7 @@ $("#profile").addEventListener("change",e=>{
   shown=12;syncForm();save();render();
 });
 $("#maxd").addEventListener("input",e=>{st.maxd=+e.target.value;shown=12;syncForm();save();render()});
-$("#reset").addEventListener("click",()=>{st=Object.assign({},DEF);pin=null;shown=12;syncForm();save();render()});
+$("#reset").addEventListener("click",()=>{st=Object.assign({},DEF);pin=null;shown=12;save();openOnb()});
 
 /* ---- mini map (data points only, no tiles) ---- */
 const B={lat0:32.028,lat1:32.147,lon0:34.742,lon1:34.848};
@@ -267,39 +351,205 @@ function score(r,m){
     else if(st.budget==="mid"){const v={FREE:6,BUDGET:5,AFFORDABLE:5,MID:3,EXPENSIVE:-3,PREMIUM:-6}[pl]??0;s+=v;if(v>0)why.push(["g",PRICE[pl]]);if(v<0)why.push(["w",PRICE[pl]])}
   }else if(st.budget!=="any")why.push(["w","רמת מחיר לא ידועה"]);
   if(st.age==="65"&&["REPAIR","NATURE_COMMUNITY"].includes(r.c)&&r.t!=="EVENT"){s+=3}
+  const fb=st.fb||{up:[],down:[]};
+  if(fb.down.includes(r.id))return null;
+  if(fb.up.includes(r.id)){s+=12;why.unshift(["g","שמרת שזה מתאים לך"])}
+  else if(fb.up.length||fb.down.length){
+    let adj=0;const sim=id=>{const o=BYID[id];return o?(o.sc&&o.sc===r.sc?2:0)+(o.c===r.c?1:0)+(o.a===r.a?1:0):0};
+    fb.up.forEach(id=>adj+=3*sim(id));fb.down.forEach(id=>adj-=3*sim(id));
+    adj=Math.max(-20,Math.min(15,adj));s+=adj;
+    if(adj>=6)why.push(["g","דומה למה שאהבת"]);else if(adj<=-6)why.push(["w","דומה למה שסימנת כפחות מתאים"]);
+  }
   if((r.tq||"").startsWith("rich"))s+=5;
   if(r.vs==="needs_review"){s-=3;why.push(["w","טעון בדיקה"])}
   return {r,s:Math.round(Math.max(0,Math.min(100,s))),d,why};
 }
 function fmtD(d){return d==null?"":(d<1?`${Math.round(d*1000/50)*50} מ'`:`${d.toFixed(1)} ק"מ`)}
-function card(x){
-  const r=x.r,[cl,cc]=CATS[r.c];
+function fmtDate(s){return s.split("-").reverse().slice(0,2).join(".")}
+function mini(x){
+  const r=x.r,[cl,cc]=CATS[r.c],fb=st.fb||{up:[],down:[]},liked=fb.up.includes(r.id);
+  const when=r.t==="EVENT"&&isDate(r.ed)?fmtDate(r.ed)+(r.h?" · "+r.h:""):"";
   const facts=[["כתובת",r.ad||(r.lm==="ONLINE"?"אונליין":"לא צוין")],[r.t==="EVENT"?"מועד":"שעות",(r.t==="EVENT"&&isDate(r.ed)?r.ed.split("-").reverse().join(".")+(r.h?" · "+r.h:""):r.h)||"לא צוין"],["מחיר",r.pr||(r.pl&&r.pl!=="UNKNOWN"?PRICE[r.pl]:"לא צוין")]];
   if(r.sv)facts.push(["מה מציעים",r.sv]);
-  return `<article class="card" style="--cc:var(${cc})"><div class="stripe"></div><div class="in">
-    <div class="top"><div style="min-width:0;flex:1"><h3>${esc(r.n)}</h3>
-      <div class="meta"><span class="pill cat">${esc(cl)}</span><span class="pill">${esc(TYPES[r.t]||r.t)}</span><span class="pill">${esc(ACT[r.a]||"")}</span>${r.sc?`<span>${esc(r.sc)}</span>`:""}${x.d!=null?`<span>· ${fmtD(x.d)} ממך</span>`:""}</div></div>
-      <div class="score" title="ציון התאמה מתוך 100"><b>${x.s}</b><span>התאמה</span></div></div>
-    <p class="desc">${esc(r.d.length>260?r.d.slice(0,257)+"…":r.d)}</p>
-    <div class="why">${x.why.map(([k,t])=>`<span class="${k}">${esc(t)}</span>`).join("")}</div>
-    <dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}<div><dt>מקור</dt><dd>${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">${esc(r.sn||"קישור")} ↗</a>`:"לא צוין"}</dd></div></dl>
-  </div></article>`;
+  const good=x.why.filter(w=>w[0]==="g"&&!w[1].startsWith("תחום שבחרת")).slice(0,2), warn=x.why.filter(w=>w[0]!=="g").slice(0,1);
+  return `<article class="mc${liked?" liked":""}" style="--cc:var(${cc})" data-id="${esc(r.id)}">
+    <div class="mtop"><span class="pill cat">${esc(cl)}</span><span class="mscore" title="ציון התאמה מתוך 100">${x.s}</span></div>
+    <h4>${esc(r.n)}</h4>
+    <div class="meta">${esc(ACT[r.a]||TYPES[r.t]||"")}${x.d!=null?` · ${fmtD(x.d)} ממך`:r.lm==="ONLINE"?" · אונליין":""}${when?` · ${esc(when)}`:""}</div>
+    <p class="mdesc">${esc(r.d)}</p>
+    <div class="why">${good.concat(warn).map(([k,t])=>`<span class="${k}">${esc(t)}</span>`).join("")}</div>
+    <details class="mdet"><summary>פרטים ומקור</summary><dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}<div><dt>מקור</dt><dd>${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">${esc(r.sn||"קישור")} ↗</a>`:"לא צוין"}</dd></div></dl></details>
+    <div class="react"><button type="button" class="rb up" data-fb="up" aria-pressed="${liked}">${liked?"שמרת ✓":"מתאים לי"}</button><button type="button" class="rb down" data-fb="down">פחות מתאים</button></div>
+  </article>`;
 }
+let openGroups=new Set(), toast=null;
+const QF={walk:["במרחק הליכה",x=>x.r.lm==="ONLINE"||(x.d!=null&&x.d<=1.2)],free:["בחינם",x=>x.r.pl==="FREE"],soon:["אירועים בחודש הקרוב",x=>x.r.t==="EVENT"&&isDate(x.r.ed)&&x.r.ed>=today&&x.r.ed<=in30],liked:["ששמרת",x=>(st.fb.up||[]).includes(x.r.id)]};
+const in30=new Date(Date.now()+30*864e5).toISOString().slice(0,10);
+const KICK={student:"סטודנט/ית? הארנק שלך עומד לנשום לרווחה.",young:"לוח זמנים עמוס? בחרנו לך את מה ששווה את הזמן.",family:"יש לנו המון מה להציע למשפחה שלך.",senior:"קהילה, טבע, ותיקונים שמחזירים חפצים לחיים.",other:"תל אביב-יפו מלאה בהפתעות ירוקות. הנה שלך."};
+function plural(n,one,many){return n===1?one:`${n} ${many}`}
 function render(){
+  st.fb=st.fb||{up:[],down:[]};
   const m=me();
-  const all=DATA.map(r=>score(r,m)).filter(Boolean).sort((a,b)=>b.s-a.s||(a.d??99)-(b.d??99));
+  let all=DATA.map(r=>score(r,m)).filter(Boolean).sort((a,b)=>b.s-a.s||(a.d??99)-(b.d??99));
   const located=m?all.filter(x=>x.d!=null||x.r.lm==="ONLINE"):all, unloc=m?all.filter(x=>x.d==null&&x.r.lm!=="ONLINE"):[];
-  const p=PERSONAS[st.persona];
-  const who=[p&&st.persona!=="other"?p.l:null,{m:"גבר",f:"אישה"}[st.gender],{"18":"גיל 18–25","26":"גיל 26–40","41":"גיל 41–64","65":"גיל 65+"}[st.age],{single:"רווק/ה",couple:"בזוגיות",kids:"הורה לילדים"}[st.family],{low:"תקציב חסכוני",mid:"תקציב בינוני"}[st.budget],m?(st.area==="pin"?"מיקום שסימנת":AREAS.find(a=>a[0]===st.area)[1].split(" (")[0])+(DISTS[st.maxd]?`, עד ${DISTS[st.maxd]} ק"מ`:""):"בלי סינון מרחק"].filter(Boolean).join(" · ");
-  $("#summary").innerHTML=`<strong>${located.length} המלצות</strong><span class="who">${esc(who)}</span>`;
-  const top=located.slice(0,shown);
-  let h=top.length?top.map(card).join(""):`<div class="empty">אין רשומות שמתאימות לכל הבחירות. נסו להגדיל את המרחק, להוסיף תחום עניין או לבחור "לא משנה" בתקציב.</div>`;
-  if(located.length>shown)h+=`<button type="button" class="btn more" id="more">עוד ${Math.min(12,located.length-shown)} המלצות</button>`;
-  if(unloc.length)h+=`<h3 class="section-h">עוד ${unloc.length} רשומות מתאימות בלי מיקום מדויק במאגר</h3>`+unloc.slice(0,4).map(card).join("");
+  const cnt=k=>located.filter(QF[k][1]).length;
+  const stats={walk:m?cnt("walk"):0,free:cnt("free"),soon:cnt("soon"),liked:cnt("liked")};
+  if(st.qf&&!QF[st.qf])st.qf="";
+  const view=st.qf?located.filter(QF[st.qf][1]):located;
+  const area=m?(st.area==="pin"?"ליד הנקודה שסימנת":"ב"+AREAS.find(a=>a[0]===st.area)[1].split(" (")[0].replace(/^מרכז העיר$/,"מרכז העיר")):"בתל אביב-יפו";
+  const bits=[];
+  if(stats.walk)bits.push(`<b>${stats.walk}</b> במרחק הליכה`);
+  if(stats.free)bits.push(`<b>${stats.free}</b> בחינם לגמרי`);
+  if(stats.soon)bits.push(`<b>${stats.soon}</b> אירועים בחודש הקרוב`);
+  const sub=bits.length?(bits.length>1?bits.slice(0,-1).join(", ")+" ו-"+bits[bits.length-1]:bits[0])+".":"";
+  const fbN=st.fb.up.length+st.fb.down.length;
+  $("#hero").innerHTML=`<p class="kick">${esc(KICK[st.persona]||KICK.other)}</p>
+    <h2>מצאנו לך <span class="big">${located.length}</span> דרכים לחיות ירוק יותר ${esc(area)}</h2>
+    ${sub?`<p class="hsub">${sub}</p>`:""}
+    <div class="qf" role="group" aria-label="סינון מהיר">
+      <button type="button" data-qf="" aria-pressed="${!st.qf}">הכול <b>${located.length}</b></button>
+      ${Object.entries(QF).filter(([k])=>stats[k]).map(([k,[l]])=>`<button type="button" data-qf="${k}" aria-pressed="${st.qf===k}">${l} <b>${stats[k]}</b></button>`).join("")}
+    </div>
+    <div class="refine"><span>רוצה לדייק?</span>
+      ${m&&st.maxd>0?`<button type="button" data-ref="closer">קרוב יותר</button>`:""}
+      ${m&&st.maxd<5?`<button type="button" data-ref="farther">גם רחוק יותר</button>`:""}
+      ${st.budget!=="low"?`<button type="button" data-ref="cheap">רק דברים זולים</button>`:`<button type="button" data-ref="anyprice">המחיר לא משנה</button>`}
+      <button type="button" data-ref="redo">לענות שוב על השאלון</button>
+      ${fbN?`<button type="button" data-ref="clearfb">איפוס ${fbN} תגובות</button>`:""}
+    </div>
+    <p class="hnote">סמנו "מתאים לי" או "פחות מתאים" על המלצות, וההמלצות הבאות יסתדרו לפי הטעם שלכם.</p>`;
+  // groups
+  const groups=[];const used=new Set();
+  const take=(arr)=>{arr.forEach(x=>used.add(x.r.id));return arr};
+  if(!st.qf){
+    const top=view.slice(0,6);
+    if(top.length)groups.push({id:"top",h:"הכי מתאים לך",sub:"ההתאמות הגבוהות ביותר לפרופיל שלך",items:take(top)});
+    const soon=view.filter(x=>!used.has(x.r.id)&&QF.soon[1](x)).sort((a,b)=>a.r.ed.localeCompare(b.r.ed));
+    if(soon.length)groups.push({id:"soon",h:"קורה בקרוב",sub:"אירועים ב-30 הימים הקרובים, לפי תאריך",items:take(soon)});
+    const order=(st.cats.length?st.cats:Object.keys(CATS));
+    const byCat=order.map(c=>({c,items:view.filter(x=>x.r.c===c&&!used.has(x.r.id))})).filter(g=>g.items.length).sort((a,b)=>st.cats.length?0:b.items.length-a.items.length);
+    byCat.forEach(g=>groups.push({id:"c-"+g.c,h:CATS[g.c][0],cc:CATS[g.c][1],sub:"",items:g.items,cat:g.c}));
+  } else groups.push({id:"qf",h:QF[st.qf][0],sub:"",items:view});
+  let h=groups.length?groups.map(g=>{
+    const open=openGroups.has(g.id),n=g.items.length,show=open?g.items:g.items.slice(0,8);
+    return `<section class="grp" ${g.cc?`style="--cc:var(${g.cc})"`:""}>
+      <div class="gh"><div><h3>${g.cc?`<i class="dot"></i>`:""}${esc(g.h)} <span class="gn">${n}</span></h3>${g.sub?`<p>${esc(g.sub)}</p>`:""}</div>
+      <div class="gact">${n>3?`<button type="button" class="btn sm" data-grp="${g.id}">${open?"הצג פחות":`הצג את כל ה-${n}`}</button>`:""}${g.cat&&st.cats.length>1?`<button type="button" class="btn sm ghost" data-dropcat="${g.cat}">פחות מזה</button>`:""}</div></div>
+      <div class="${open?"grid":"rail"}">${show.map(mini).join("")}</div></section>`}).join("")
+    :`<div class="empty">אין רשומות שמתאימות לכל הבחירות. נסו "גם רחוק יותר", להוסיף תחום עניין או לבחור "המחיר לא משנה".</div>`;
+  if(unloc.length&&!st.qf)h+=`<section class="grp"><div class="gh"><div><h3>עוד ${unloc.length} התאמות בלי מיקום מדויק</h3><p>אין להן כתובת מדויקת במאגר, ולכן הן לא מסוננות לפי מרחק</p></div></div><div class="rail">${unloc.slice(0,8).map(mini).join("")}</div></section>`;
+  if(toast)h=`<div class="toast" role="status">${esc(toast.t)} <button type="button" class="btn sm" data-undo="1">ביטול</button></div>`+h;
   $("#list").innerHTML=h;
-  const mb=$("#more");if(mb)mb.onclick=()=>{shown+=12;render()};
-  drawMap(top);
+  drawMap(view.slice(0,40));
 }
-syncForm();render();
-fetch("records.json").then(r=>r.json()).then(d=>{DATA=d;render()}).catch(()=>{$("#list").innerHTML='<div class="empty">לא הצלחתי לטעון את נתוני המאגר. רעננו את העמוד.</div>'});
+$("#hero").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.qf!==undefined){st.qf=b.dataset.qf;toast=null}
+  const r=b.dataset.ref;
+  if(r==="redo"){openOnb();return}
+  if(r==="closer")st.maxd=Math.max(0,st.maxd-1);
+  if(r==="farther")st.maxd=Math.min(5,st.maxd+1);
+  if(r==="cheap")st.budget="low";
+  if(r==="anyprice")st.budget="any";
+  if(r==="clearfb"){st.fb={up:[],down:[]};toast=null}
+  syncForm();save();render();
+});
+$("#list").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.grp){const g=b.dataset.grp;openGroups.has(g)?openGroups.delete(g):openGroups.add(g);render();return}
+  if(b.dataset.dropcat){const c=b.dataset.dropcat;const prev=st.cats.slice();st.cats=st.cats.filter(x=>x!==c);toast={t:`הסרנו את "${CATS[c][0]}" מתחומי העניין.`,undo:()=>{st.cats=prev}};syncForm();save();render();return}
+  if(b.dataset.undo){if(toast&&toast.undo)toast.undo();toast=null;syncForm();save();render();return}
+  const fb=b.dataset.fb;if(!fb)return;
+  const id=b.closest(".mc").dataset.id,r=DATA.find(x=>x.id===id);st.fb=st.fb||{up:[],down:[]};
+  const prev={up:st.fb.up.slice(),down:st.fb.down.slice()};
+  if(fb==="up"){if(st.fb.up.includes(id)){st.fb.up=st.fb.up.filter(x=>x!==id);toast=null}else{st.fb.up.push(id);st.fb.down=st.fb.down.filter(x=>x!==id);toast={t:`מעולה! נקדם עוד המלצות כמו "${r.n}".`,undo:()=>{st.fb=prev}}}}
+  else{st.fb.down.push(id);st.fb.up=st.fb.up.filter(x=>x!==id);toast={t:`הבנו. הסתרנו את "${r.n}" ונציג פחות דברים דומים.`,undo:()=>{st.fb=prev}}}
+  save();render();
+});
+/* ---- onboarding questionnaire: asks who the viewer is, summarises the profile, then opens the recommendations ---- */
+const AGE_L={"18":"18 עד 25","26":"26 עד 40","41":"41 עד 64","65":"65 ומעלה"};
+const FAM_L={single:"רווק/ה",couple:"בזוגיות, בלי ילדים",kids:"הורה לילדים"};
+const GEN_L={f:"מחלקת נשים",m:"מחלקת גברים",any:"לא משנה"};
+const BUD_L={low:"חסכוני",mid:"בינוני",any:"לא משנה"};
+const STEPS=[
+  {k:"persona",h:"מה הכי מתאר אותך כרגע?",sub:"נשתמש בזה כנקודת פתיחה. בשלבים הבאים אפשר לדייק.",
+   opts:[["student","סטודנט/ית","תקציב מוגבל, דירה שכורה"],["young","צעיר/ה עובד/ת","עבודה, ומעט זמן פנוי"],["family","משפחה עם ילדים","פעילויות ופתרונות לבית ולילדים"],["senior","מבוגר/ת או גמלאי/ת","זמן לקהילה, לתיקונים ולטבע"],["other","משהו אחר","נתחיל בלי הנחות"]]},
+  {k:"agefam",h:"כמה פרטים כלליים",sub:"אפשר לדלג על כל אחד מהם.",groups:[
+    ["age","גיל",[["18","18 עד 25"],["26","26 עד 40"],["41","41 עד 64"],["65","65 ומעלה"]]],
+    ["family","מצב משפחתי",[["single","רווק/ה"],["couple","בזוגיות, בלי ילדים"],["kids","הורה לילדים"]]]]},
+  {k:"gender",h:"באיזו מחלקה לחפש לך בגדים?",sub:"משמש רק כדי לסדר חנויות ביגוד. בשאר ההמלצות זה לא משנה.",
+   opts:[["f","מחלקת נשים",""],["m","מחלקת גברים",""],["any","לא משנה / שתיהן",""]]},
+  {k:"budget",h:"מה המצב הכלכלי, בגדול?",sub:"אין צורך בפרטים. זה רק עוזר לנו לסדר לפי מחיר.",
+   opts:[["low","חסכוני","מעדיפים דברים חינמיים וזולים"],["mid","בינוני","מוכנים לשלם על משהו טוב"],["any","לא משנה","המחיר לא שיקול"]]},
+  {k:"cats",h:"מה מעניין אותך?",sub:"סימנו מראש לפי מה שענית. אפשר לבחור כמה שרוצים, או לא לבחור כלום כדי לראות הכול.",many:true},
+  {k:"area",h:"איפה בעיר את/ה בדרך כלל?",sub:"נציג קודם את מה שקרוב. אחר כך אפשר לסמן נקודה מדויקת על המפה."},
+  {k:"sum"}
+];
+let q=null, qi=0;
+function showApp(on){$("#onbWrap").classList.toggle("hidden",on);$("#app").classList.toggle("hidden",!on)}
+function openOnb(){q=JSON.parse(JSON.stringify(st));if(!st.onb)q.persona="";qi=0;showApp(false);drawQ();window.scrollTo(0,0)}
+function finish(){if(!q.persona)q.persona="other";st=Object.assign({},q,{onb:true});if(st.area==="pin"&&!pin)st.area="";shown=12;save();showApp(true);syncForm();render();window.scrollTo(0,0)}
+function optBtn(k,v,l,sub,on,cc){return `<button type="button" class="opt" data-k="${k}" data-v="${v}" aria-pressed="${on}" ${cc?`style="--cc:var(${cc})"`:""}><b>${esc(l)}</b>${sub?`<span>${esc(sub)}</span>`:""}</button>`}
+function howList(p){
+  const out=[];
+  out.push(p.cats.length?`נציג רק את התחומים שבחרת (${p.cats.length} מתוך 7).`:"נציג את כל התחומים.");
+  if(p.budget==="low")out.push("מקומות חינמיים וזולים יעלו למעלה, ויקרים ירדו למטה.");
+  else if(p.budget==="mid")out.push("מחיר נגיש יקבל עדיפות קלה.");
+  if(p.family==="kids"||p.persona==="family")out.push("פעילויות לילדים ולמשפחות יקבלו עדיפות.");
+  else if(p.persona==="student"||p.family==="single")out.push("פעילויות שמיועדות בעיקר לילדים ירדו למטה.");
+  if(p.gender==="f"||p.gender==="m")out.push(`בחנויות ביגוד נעדיף את ${GEN_L[p.gender]}.`);
+  if(p.age==="65")out.push("תיקונים ופעילויות קהילה קבועות יקבלו עדיפות קלה.");
+  out.push(p.area?`נציג קודם את מה שקרוב אליך${DISTS[p.maxd]?`, עד ${DISTS[p.maxd]} ק"מ`:""}.`:"לא נסנן לפי מרחק.");
+  if(p.ev==="upcoming")out.push("אירועים שכבר עברו לא יוצגו.");
+  return out;
+}
+function drawQ(){
+  const S=STEPS[qi],n=STEPS.length-1,last=S.k==="sum";
+  let h=`<div class="qtop"><span>${last?"סיכום":`שאלה ${qi+1} מתוך ${n}`}</span>${last?"":`<button type="button" class="btn link" data-act="skip">דילוג ישר להמלצות</button>`}</div><div class="prog"><i style="width:${Math.round((last?n:qi)/n*100)}%"></i></div>`;
+  if(S.opts){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p><div class="opts">${S.opts.map(([v,l,s])=>optBtn(S.k,v,l,s,q[S.k]===v)).join("")}</div>`}
+  else if(S.groups){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p>`+S.groups.map(([k,l,o])=>`<div class="qgroup"><b>${l}</b><div class="opts">${o.map(([v,t])=>optBtn(k,v,t,"",q[k]===v)).join("")}</div></div>`).join("")}
+  else if(S.many){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p><div class="opts">${Object.entries(CATS).map(([k,[l,c]])=>optBtn("cats",k,l,"",q.cats.includes(k),c)).join("")}</div>`}
+  else if(S.k==="area"){
+    h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p><div class="opts">${AREAS.filter(a=>a[0]!=="pin").map(a=>{const[l,s]=a[1].split(" (");return optBtn("area",a[0],a[0]?l:"לא רוצה לציין",a[0]?(s?s.replace(")",""):""):"בלי סינון לפי מרחק",q.area===a[0])}).join("")}</div>`;
+    if(q.area)h+=`<div class="qgroup"><b>עד כמה רחוק מוכנים להגיע?</b><div class="opts">${DISTS.map((d,i)=>optBtn("maxd",i,d?`${d} ק"מ`:"כל העיר","",q.maxd===i)).join("")}</div></div>`;
+  } else {
+    const p=q;const prev=st;st=p;const m=me();
+    const res=DATA.length?DATA.map(r=>score(r,m)).filter(Boolean).filter(x=>!m||x.d!=null||x.r.lm==="ONLINE").sort((a,b)=>b.s-a.s||(a.d??99)-(b.d??99)):[];
+    st=prev;
+    const area=p.area?(p.area==="pin"?"הנקודה שסימנת":AREAS.find(a=>a[0]===p.area)[1].split(" (")[0]):"לא צוין";
+    h+=`<h2 class="qh">הפרופיל שלך</h2><p class="qsub">זה מה שהבנו מהתשובות. אם משהו לא נכון, אפשר לחזור ולתקן.</p>
+    <dl class="prof">
+      <div><dt>שלב בחיים</dt><dd>${esc(p.persona&&p.persona!=="other"?PERSONAS[p.persona].l:"לא צוין")}</dd></div>
+      <div><dt>גיל</dt><dd>${esc(AGE_L[p.age]||"לא צוין")}</dd></div>
+      <div><dt>מצב משפחתי</dt><dd>${esc(FAM_L[p.family]||"לא צוין")}</dd></div>
+      <div><dt>ביגוד</dt><dd>${esc(GEN_L[p.gender])}</dd></div>
+      <div><dt>תקציב</dt><dd>${esc(BUD_L[p.budget])}</dd></div>
+      <div><dt>מיקום</dt><dd>${esc(area)}${p.area&&DISTS[p.maxd]?`, עד ${DISTS[p.maxd]} ק"מ`:""}</dd></div>
+      <div class="wide"><dt>תחומי עניין</dt><dd class="cats">${p.cats.length?p.cats.map(c=>`<span class="pill cat" style="--cc:var(${CATS[c][1]})">${esc(CATS[c][0])}</span>`).join(""):"כל התחומים"}</dd></div>
+    </dl>
+    <h3 class="section-h" style="margin-top:18px">איך נתאים לך את ההמלצות</h3>
+    <ul class="how">${howList(p).map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+    <div class="preview">${DATA.length?(res.length?`<strong>מצאנו ${res.length} המלצות בשבילך.</strong> הראשונות ברשימה:<ol>${res.slice(0,3).map(x=>`<li>${esc(x.r.n)} <span class="hint" style="display:inline">(${esc(CATS[x.r.c][0])})</span></li>`).join("")}</ol>`:`<strong>לא מצאנו התאמות לכל הבחירות.</strong> כדאי להגדיל את המרחק או להוסיף תחום עניין.`):"טוענים את המאגר…"}</div>`;
+  }
+  h+=`<div class="qnav">${qi>0?`<button type="button" class="btn" data-act="back">→ הקודם</button>`:"<span></span>"}${last?`<button type="button" class="btn pri" data-act="go">הצג לי המלצות</button>`:`<button type="button" class="btn pri" data-act="next">${S.opts&&!q[S.k]?"דילוג":"המשך"} ←</button>`}</div>`;
+  $("#qcard").innerHTML=h;
+}
+$("#qcard").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const act=b.dataset.act;
+  if(act==="next"){qi=Math.min(qi+1,STEPS.length-1);drawQ();return}
+  if(act==="back"){qi=Math.max(0,qi-1);drawQ();return}
+  if(act==="skip"||act==="go"){finish();return}
+  const k=b.dataset.k,v=b.dataset.v;if(!k)return;
+  if(k==="cats"){q.cats=q.cats.includes(v)?q.cats.filter(c=>c!==v):q.cats.concat(v);drawQ();return}
+  if(k==="maxd"){q.maxd=+v;drawQ();return}
+  if(k==="age"||k==="family"){q[k]=q[k]===v?"":v;drawQ();return}
+  if(k==="area"){q.area=v;drawQ();return}
+  if(k==="persona"){const p=PERSONAS[v];q.persona=v;q.budget=p.budget;q.cats=p.cats.slice();q.age=p.age||"";q.family=p.family||"";}
+  else q[k]=v;
+  drawQ();setTimeout(()=>{if(STEPS[qi].k===k){qi++;drawQ()}},220);
+});
+syncForm();
+if(st.onb){showApp(true);render()}else openOnb();
+fetch("records.json").then(r=>r.json()).then(d=>{DATA=d;BYID=Object.fromEntries(d.map(r=>[r.id,r]));render();if(q&&STEPS[qi].k==="sum")drawQ()}).catch(()=>{$("#list").innerHTML='<div class="empty">לא הצלחתי לטעון את נתוני המאגר. רעננו את העמוד.</div>'});
 </script>
