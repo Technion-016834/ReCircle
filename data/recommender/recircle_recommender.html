@@ -257,7 +257,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
 .det .links a.pri{background:var(--route);border-color:var(--route);color:#fff}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .det .links a.pri{color:#0c1420}}
 :root[data-theme="dark"] .det .links a.pri{color:#0c1420}
-.mvpick{position:absolute;inset-inline-end:58px;top:58px;width:min(360px,calc(100% - 70px));max-height:calc(100% - 100px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.22);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:2}
+.mvpick{position:absolute;inset-inline-end:58px;bottom:30px;width:min(360px,calc(100% - 70px));max-height:min(62%,calc(100% - 120px));overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 28px rgba(0,0,0,.22);padding:12px;display:flex;flex-direction:column;gap:8px;z-index:2}
 .pkh{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .pkh strong{font-size:16.5px;font-weight:800;display:block}
 .pkh p{margin:2px 0 0;font-size:13px;color:var(--muted)}
@@ -377,11 +377,11 @@ const AREAS=[["","בלי מיקום (לא לסנן לפי מרחק)"],["c","מר
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 let DATA=[], BYID={}, pin=null, shown=12;
-const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming",qf:"",fb:{up:[],down:[]},view:"profile",mm:{mode:"walk",t:15,cats:[],rt:"all",sort:"match",reach:false}};
+const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming",qf:"",fb:{up:[],down:[]},view:"profile",mm:{mode:"walk",t:0,cats:[],rt:"all",sort:"match",reach:false,v:2}};
 const fresh=()=>JSON.parse(JSON.stringify(DEF));
 let st=load();
 
-function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;const o=Object.assign(fresh(),v);o.mm=Object.assign(fresh().mm,v.mm||{});return o}}catch(e){}return fresh()}
+function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;const o=Object.assign(fresh(),v);o.mm=Object.assign(fresh().mm,v.mm||{});if(o.mm.v!==2){o.mm.t=0;o.mm.sort="match";o.mm.v=2}return o}}catch(e){}return fresh()}
 function save(){try{localStorage.setItem("rc-profile",JSON.stringify(Object.assign({},st,{pin})))}catch(e){}}
 
 function seg(id,name,opts,type="radio"){
@@ -679,7 +679,7 @@ $("#qcard").addEventListener("click",e=>{
 });
 /* ---- map-first mode: drop a pin (or use your location), see what is reachable and how long it takes ---- */
 const MODES={walk:["הליכה","🚶"],bike:["אופניים","🚲"],bus:["תחבורה ציבורית","🚌"],car:["רכב","🚗"]};
-const TIMES=[5,10,15,20,30,45,60];
+const TIMES=[0,5,10,15,20,30,45,60];
 // minutes from street-network metres (walk graph) or car seconds; see the "how we estimate" note in the UI
 const TT={walk:m=>m/80,bike:m=>2+m/250,bus:m=>14+m/254,car:s=>5+s/60};
 const CARKMH=[65,45,32,28,25,18,12,0,18]; // by street class: motorway, trunk, primary, secondary, tertiary, residential, living, pedestrian, other
@@ -791,8 +791,11 @@ function mvItems(){
     if(mm.rt!=="all"&&r.t!==mm.rt)continue;
     if(r.t==="EVENT"&&isDate(r.ed)&&r.ed<today&&st.ev==="upcoming")continue;
     if((st.fb.down||[]).includes(r.id))continue;
-    const x={r};if(o){x.m=metr(r,o,P);x.tm=x.m.t[mm.mode];x.in=x.tm<=mm.t}
-    if(st.onb){const sc=score(r,null);x.s=sc?sc.s:null}
+    const x={r};if(o){x.m=metr(r,o,P);x.tm=x.m.t[mm.mode];x.in=!mm.t||x.tm<=mm.t}
+    // profile fit (categories, budget, family, clothing, feedback) without the old area/distance part
+    const sc=st.onb?score(r,null):null;x.fit=!st.onb||!!sc;
+    // match for this pin: profile fit plus up to 30 points for being quick to reach from it
+    if(sc)x.s=Math.round(Math.max(0,Math.min(100,sc.s+(o?30*Math.max(0,1-x.tm/40)-10:0))));
     items.push(x)}
   return {items,o,P};
 }
@@ -800,16 +803,16 @@ function mvBar(){
   const mm=st.mm,mine=st.onb&&st.cats.length;
   const same=mine&&mm.cats.length===st.cats.length&&st.cats.every(c=>mm.cats.includes(c));
   return `<div class="blk scroll" role="group" aria-label="איך מגיעים"><span class="grpl gl2">איך מגיעים</span>${Object.entries(MODES).map(([k,[l,i]])=>`<button type="button" class="chip" data-mode="${k}" aria-pressed="${mm.mode===k}"><span aria-hidden="true">${i}</span>${k==="bus"?`<span class="fl">${l}</span><span class="sl">תח"צ</span>`:l}</button>`).join("")}</div>
-  <div class="blk"><label class="grpl" for="mvT">עד</label><select id="mvT">${TIMES.map(t=>`<option value="${t}" ${mm.t===t?"selected":""}>${t} דקות</option>`).join("")}</select></div>
+  <div class="blk"><label class="grpl" for="mvT">זמן הגעה</label><select id="mvT">${TIMES.map(t=>`<option value="${t}" ${mm.t===t?"selected":""}>${t?t+" דקות":"בלי הגבלת זמן"}</option>`).join("")}</select></div>
   <div class="blk scroll" role="group" aria-label="תחומים"><span class="grpl gl2">תחומים</span><button type="button" class="chip" data-mcat="" aria-pressed="${!mm.cats.length}">הכול</button>${mine?`<button type="button" class="chip" data-mcat="mine" aria-pressed="${same}">התחומים שלי</button>`:""}${Object.entries(CATS).map(([k,[l,c]])=>`<button type="button" class="chip cc" style="--cc:var(${c})" data-mcat="${k}" aria-pressed="${mm.cats.includes(k)}">${esc(l)}</button>`).join("")}</div>
   <div class="blk"><label class="grpl" for="mvRt">סוג</label><select id="mvRt">${[["all","הכול"],["BUSINESS","עסקים"],["EVENT","אירועים"],["INITIATIVE","יוזמות"]].map(([v,l])=>`<option value="${v}" ${mm.rt===v?"selected":""}>${l}</option>`).join("")}</select>
   <label class="grpl" for="mvSort" style="margin-inline-start:8px">מיון</label><select id="mvSort">${st.onb?`<option value="match" ${mm.sort==="match"?"selected":""}>מומלץ לי</option>`:""}<option value="time" ${mm.sort==="time"||!st.onb?"selected":""}>הכי קרוב בזמן</option></select>
-  <button type="button" class="chip" data-reach="1" aria-pressed="${!!mm.reach}" style="margin-inline-start:8px">אזור הגעה על המפה</button></div>`;
+  ${mm.t?`<button type="button" class="chip" data-reach="1" aria-pressed="${!!mm.reach}" style="margin-inline-start:8px">אזור הגעה על המפה</button>`:""}</div>`;
 }
 function detHtml(x,o,P,R){
   const r=x.r,[cl,cc]=CATS[r.c],mm=st.mm;
   const facts=[["כתובת",r.ad||"לא צוין"],[r.t==="EVENT"?"מועד":"שעות",(r.t==="EVENT"&&isDate(r.ed)?r.ed.split("-").reverse().join(".")+(r.h?" · "+r.h:""):r.h)||"לא צוין"],["מחיר",r.pr||(r.pl&&r.pl!=="UNKNOWN"?PRICE[r.pl]:"לא צוין")]];
-  if(x.s!=null)facts.push(["התאמה לפרופיל",x.s+"%"]);
+  if(x.s!=null)facts.push(["התאמה לך מהסיכה",x.s+"%"]);
   let h=`<div class="det" style="--cc:var(${cc})"><div class="dtop"><span class="pill cat">${esc(cl)}</span><button type="button" class="x" data-close="1" aria-label="סגירה">×</button></div>
     <h3>${esc(r.n)}</h3><div class="meta">${esc(ACT[r.a]||TYPES[r.t]||"")}${r.sc?" · "+esc(r.sc):""}</div>`;
   if(x.m){
@@ -834,27 +837,27 @@ function renderMV(){
   if(!DATA.length){sum=`<strong>טוענים את המאגר…</strong>`;list=[]}
   else if(!o){sum=`<strong>איפה מתחילים?</strong><p>לחצו על המפה כדי לנעוץ סיכה, השתמשו ב"המיקום שלי" או בחרו אזור. נראה מה אפשר להספיק להגיע אליו ב-${mm.t} דקות ${L}.</p>`;list=items.slice().sort((a,b)=>a.r.n.localeCompare(b.r.n,"he"))}
   else{
-    list=items.filter(x=>x.in);const out=items.length-list.length;
+    list=items.filter(x=>x.in&&x.fit);const out=items.length-list.length;
     list.sort(mm.sort==="match"&&st.onb?(a,b)=>(b.s??-1)-(a.s??-1)||a.tm-b.tm:(a,b)=>a.tm-b.tm);
-    sum=`<strong><span class="big">${list.length}</span> ${list.length===1?"מקום":"מקומות"} עד ${mm.t} דקות ${L} ${st.area==="pin"?"מהסיכה":"מ"+esc(AREAS.find(a=>a[0]===st.area)[1].split(" (")[0])}</strong>
-      <p>${out?`עוד ${out} רחוקים יותר מופיעים במפה בצבע חלש. `:""}${RT?(P&&P.far?"הסיכה רחוקה מרשת הרחובות שבמאגר, ולכן הזמנים לפי קו אווירי.":"בחרו מקום מהרשימה או מהמפה כדי לקבל מסלול מדויק."):"טוענים את רשת הרחובות… בינתיים הזמנים לפי קו אווירי."}</p>
+    sum=`<strong><span class="big">${list.length}</span> ${list.length===1?"מקום":"מקומות"} ${st.onb?"שמתאימים לך":""} ${mm.t?`עד ${mm.t} דקות ${L} `:""}${st.area==="pin"?"מהסיכה":"מ"+esc(AREAS.find(a=>a[0]===st.area)[1].split(" (")[0])}</strong>
+      <p>${out?`עוד ${out} ${mm.t?"רחוקים יותר או ":""}פחות מתאימים לפרופיל מופיעים במפה בצבע חלש. `:""}${RT?(P&&P.far?"הסיכה רחוקה מרשת הרחובות שבמאגר, ולכן הזמנים לפי קו אווירי.":"בחרו מקום מהרשימה או מהמפה כדי לקבל מסלול מדויק."):"טוענים את רשת הרחובות… בינתיים הזמנים לפי קו אווירי."}</p>
       <details class="howcalc"><summary>איך חישבנו?</summary><ul><li>הליכה: 4.8 קמ"ש לאורך הרחובות.</li><li>אופניים: 15 קמ"ש, ועוד 2 דקות לקחת ולהחנות.</li><li>תחבורה ציבורית: הערכה גסה, בלי לוחות זמנים. 7 דקות הליכה לתחנה וממנה, 7 דקות המתנה ונסיעה של כ-16 קמ"ש.</li><li>רכב: מהירות ממוצעת לפי סוג הרחוב (18 עד 65 קמ"ש), ועוד 5 דקות לחניה. בלי פקקים ובלי כיווני תנועה.</li><li>רשת הרחובות: OpenStreetMap, חילוץ מ-14.11.2026.</li></ul></details>`;
   }
   $("#mvsum").innerHTML=sum;
   let pk="";
-  if(MV.pick&&o&&DATA.length){const rec=(list.length?list:items.slice().sort((a,b)=>a.tm-b.tm)).slice(0,6);
-    pk=`<div class="pkh"><div><strong>${st.onb&&mm.sort==="match"?"מומלצים לך ליד הסיכה":"הכי קרובים לסיכה"}</strong><p>${list.length?`${list.length} מקומות עד ${mm.t} דקות ${L}. בחרו אחד ונבנה מסלול.`:`אין מקומות עד ${mm.t} דקות ${L}. אלה הקרובים ביותר:`}</p></div><button type="button" class="x" data-pickclose="1" aria-label="סגירה">×</button></div>
-    <div class="pkl">${rec.map(x=>{const r=x.r,[cl,cc]=CATS[r.c];return `<button type="button" class="pki" style="--cc:var(${cc})" data-sel="${esc(r.id)}"><i class="dot"></i><span><b>${esc(r.n)}</b><small>${esc(cl)}${x.s!=null&&st.onb?` · ${x.s}% התאמה`:""}</small></span><span class="lm"><b>${fmtMin(x.tm)}</b><small>${MODES[mm.mode][1]}</small></span></button>`}).join("")}</div>
-    ${list.length>rec.length?`<button type="button" class="btn sm" data-pickclose="1">לכל ${list.length} התוצאות ברשימה</button>`:""}`}
+  if(MV.pick&&o&&DATA.length){const all=list.length?list:items.slice().sort((a,b)=>a.tm-b.tm),rec=MV.pickAll?all:all.slice(0,8);
+    pk=`<div class="pkh"><div><strong>${list.length?`${list.length} ${st.onb?"התאמות":"מקומות"} למיקום הזה`:"אין התאמות בטווח"}</strong><p>${list.length?`חישבנו מחדש את ${st.onb?"כל ההמלצות לפי הפרופיל שלך":"כל המקומות"} מהסיכה${mm.t?`, עד ${mm.t} דקות ${L}`:""}${st.onb&&mm.sort==="match"?", מהמתאים ביותר":", מהקרוב ביותר"}. בחרו מקום ונבנה מסלול.`:`אין מקומות עד ${mm.t} דקות ${L}. אלה הקרובים ביותר:`}</p></div><button type="button" class="x" data-pickclose="1" aria-label="סגירה">×</button></div>
+    <div class="pkl">${rec.map(x=>{const r=x.r,[cl,cc]=CATS[r.c];return `<button type="button" class="pki" style="--cc:var(${cc})" data-sel="${esc(r.id)}"><i class="dot"></i><span><b>${esc(r.n)}</b><small>${esc(cl)}${x.s!=null?` · ${x.s}% התאמה`:""} · ${fmtM(x.m.wm)}</small></span><span class="lm"><b>${fmtMin(x.tm)}</b><small>${MODES[mm.mode][1]}</small></span></button>`}).join("")}</div>
+    ${all.length>rec.length?`<button type="button" class="btn sm" data-pickall="1">הצגת כל ${all.length}</button>`:""}`}
   $("#mvpick").innerHTML=pk;$("#mvpick").classList.toggle("hidden",!pk);
   const shownL=list.slice(0,MV.lim);
-  $("#mvlist").innerHTML=shownL.map(x=>{const r=x.r,[cl,cc]=CATS[r.c];return `<button type="button" class="li${MV.hov===r.id?" hov":""}" style="--cc:var(${cc})" data-sel="${esc(r.id)}" aria-current="${MV.sel===r.id}"><i class="dot"></i><span><b>${esc(r.n)}</b><small>${esc(cl)} · ${esc(ACT[r.a]||TYPES[r.t]||"")}${r.ad?" · "+esc(r.ad.replace(/, תל אביב-יפו$/,"")):""}</small></span><span class="lm">${x.m?`<b>${fmtMin(x.tm)}</b><small>${fmtM(mm.mode==="car"?x.m.wm:x.m.wm)}</small>`:x.s!=null?`<b>${x.s}%</b><small>התאמה</small>`:""}</span></button>`}).join("")
+  $("#mvlist").innerHTML=shownL.map(x=>{const r=x.r,[cl,cc]=CATS[r.c];return `<button type="button" class="li${MV.hov===r.id?" hov":""}" style="--cc:var(${cc})" data-sel="${esc(r.id)}" aria-current="${MV.sel===r.id}"><i class="dot"></i><span><b>${esc(r.n)}</b><small>${esc(cl)} · ${esc(ACT[r.a]||TYPES[r.t]||"")}${r.ad?" · "+esc(r.ad.replace(/, תל אביב-יפו$/,"")):""}</small></span><span class="lm">${x.m?`<b>${fmtMin(x.tm)}</b><small>${x.s!=null?x.s+"% התאמה":fmtM(x.m.wm)}</small>`:x.s!=null?`<b>${x.s}%</b><small>התאמה</small>`:""}</span></button>`}).join("")
     +(list.length>MV.lim?`<button type="button" class="btn more" data-more="1">הצגת עוד ${list.length-MV.lim}</button>`:"")
     +(o&&DATA.length&&!list.length?`<div class="empty">אין כאן מקומות בטווח הזה. נסו זמן ארוך יותר, אמצעי תנועה אחר או תחומים נוספים.</div>`:"");
   const sx=MV.sel&&items.find(x=>x.r.id===MV.sel);
   const Rsel=sx&&o&&RT?routePath(P,sx.r,mm.mode):null;
   $("#mvdet").innerHTML=sx?detHtml(sx,o,P,Rsel):"";
-  $("#mvReach").setAttribute("d",o&&RT&&mm.reach?reachPath(P,mm.mode,mm.t):"");
+  $("#mvReach").setAttribute("d",o&&RT&&mm.reach&&mm.t?reachPath(P,mm.mode,mm.t):"");
   let rt="";
   if(sx&&o){const R=Rsel,[ox,oy]=px(o.lat,o.lon),[tx,ty]=px(sx.r.lat,sx.r.lon);
     if(R)rt=`<path class="cas" d="${R.s}"/><path class="ln" d="${R.s}"/><path class="leg" d="M${ox},${oy}L${R.a[0]},${R.a[1]}M${R.b[0]},${R.b[1]}L${tx},${ty}"/>`;
@@ -865,7 +868,7 @@ function renderMV(){
 }
 function drawPts(){
   if(!MVX)return;const el=svgM(),u=vb.w/(el.clientWidth||300);let s="",top="";
-  for(const x of MVX.items){const r=x.r,[X,Y]=px(r.lat,r.lon),sel=r.id===MV.sel,hov=r.id===MV.hov,on=!MVX.o||x.in;
+  for(const x of MVX.items){const r=x.r,[X,Y]=px(r.lat,r.lon),sel=r.id===MV.sel,hov=r.id===MV.hov,on=(!MVX.o||x.in)&&x.fit;
     const c=`<circle class="pt" data-id="${esc(r.id)}" cx="${X.toFixed(2)}" cy="${Y.toFixed(2)}" r="${((sel?8:hov?7:on?5:3)*u).toFixed(3)}" fill="var(${CATS[r.c][1]})" fill-opacity="${on||sel?1:.38}" stroke="var(--surface)" stroke-width="${((on||sel?1.6:.7)*u).toFixed(3)}"><title>${esc(r.n)}</title></circle>`;
     if(sel||hov)top+=c+`<circle cx="${X.toFixed(2)}" cy="${Y.toFixed(2)}" r="${(12*u).toFixed(3)}" fill="none" stroke="var(${CATS[r.c][1]})" stroke-width="${(2*u).toFixed(3)}" pointer-events="none"/>`;else s+=c}
   $("#mvPts").innerHTML=s+top;
@@ -882,7 +885,12 @@ function ensureVisible(pts,snug){const pad=.12;const xs0=pts.map(p=>p[0]),ys0=pt
   const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),m=Math.max(x1-x0,y1-y0)*.25+6;fitBox(x0-m,y0-m,x1+m,y1+m)}
 function zoomAt(f,ux,uy){const nw=Math.min(420,Math.max(300/16,vb.w/f)),k=nw/vb.w;vb.x=ux-(ux-vb.x)*k;vb.y=uy-(uy-vb.y)*k;vb.w=nw;vb.h*=k;applyVB()}
 function toUser(cx,cy){const b=svgM().getBoundingClientRect();return [vb.x+(cx-b.left)/b.width*vb.w,vb.y+(cy-b.top)/b.height*vb.h]}
-function setPin(la,lo,msg){if(la<B.lat0-.01||la>B.lat1+.01||lo<B.lon0-.01||lo>B.lon1+.01){MV.msg="";return false}pin={lat:la,lon:lo};st.area="pin";MV.lim=40;MV.sel=null;MV.pick=true;save();renderMV();return true}
+function setPin(la,lo,msg){if(la<B.lat0-.01||la>B.lat1+.01||lo<B.lon0-.01||lo>B.lon1+.01){MV.msg="";return false}pin={lat:la,lon:lo};st.area="pin";MV.lim=40;MV.sel=null;MV.pick=true;MV.pickAll=false;save();renderMV();keepPinVisible();return true}
+// slide the map so the picker never hides the pin it belongs to
+function keepPinVisible(){const o=origin(),pk=$("#mvpick");if(!o||pk.classList.contains("hidden"))return;const[X,Y]=px(o.lat,o.lon),b=svgM().getBoundingClientRect(),r=pk.getBoundingClientRect();
+  const sx=b.left+(X-vb.x)/vb.w*b.width,sy=b.top+(Y-vb.y)/vb.h*b.height;if(sx<r.left-24||sx>r.right+24||sy<r.top-40||sy>r.bottom+24)return;
+  let tx=sx,ty=sy;if(r.width>b.width*.8)ty=b.top+(r.top-b.top)/2;else tx=b.right-r.right>r.left-b.left?(r.right+b.right)/2:(b.left+r.left)/2;
+  vb.x-=(tx-sx)/b.width*vb.w;vb.y-=(ty-sy)/b.height*vb.h;applyVB()}
 function selectRec(id,scroll){MV.sel=id;MV.pick=false;renderMV();const x=MVX.items.find(x=>x.r.id===id);if(x){const pts=[px(x.r.lat,x.r.lon)];if(MVX.o)pts.push(px(MVX.o.lat,MVX.o.lon));ensureVisible(pts,!!MVX.o)}
   if(scroll){const d=$("#mvdet");if(d.getBoundingClientRect().top<0||window.innerWidth<=860)d.scrollIntoView({block:"nearest",behavior:"smooth"})}}
 function nearestPt(ux,uy,tolPx){if(!MVX)return null;const u=vb.w/(svgM().clientWidth||300);let best=null,bd=tolPx*u;for(const x of MVX.items){const[X,Y]=px(x.r.lat,x.r.lon),d=Math.hypot(X-ux,Y-uy);if(d<bd){bd=d;best=x.r.id}}return best}
@@ -907,12 +915,12 @@ function nearestPt(ux,uy,tolPx){if(!MVX)return null;const u=vb.w/(svgM().clientW
   el.addEventListener("keydown",e=>{const s=vb.w*.15;const k={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
     if(k){e.preventDefault();vb.x+=k[0];vb.y+=k[1];applyVB()}else if(e.key==="+"||e.key==="="){zoomAt(1.4,vb.x+vb.w/2,vb.y+vb.h/2)}else if(e.key==="-"){zoomAt(1/1.4,vb.x+vb.w/2,vb.y+vb.h/2)}});
   document.querySelector(".mvtools").addEventListener("click",e=>{const z=e.target.closest("button")?.dataset.z;if(!z)return;if(z==="fit")fitAll();else zoomAt(z==="in"?1.5:1/1.5,vb.x+vb.w/2,vb.y+vb.h/2)});
-  $("#mvArea").addEventListener("change",e=>{st.area=e.target.value;MV.lim=40;MV.sel=null;MV.pick=true;save();renderMV();const o=origin();if(o){const[X,Y]=px(o.lat,o.lon);centerOn(X,Y,110)}});
+  $("#mvArea").addEventListener("change",e=>{st.area=e.target.value;MV.lim=40;MV.sel=null;MV.pick=true;MV.pickAll=false;save();renderMV();const o=origin();if(o){const[X,Y]=px(o.lat,o.lon);centerOn(X,Y,110);keepPinVisible()}});
   $("#mvGeo").addEventListener("click",()=>{const b=$("#mvGeo");
     if(!navigator.geolocation){mvToast("הדפדפן לא תומך באיתור מיקום. אפשר לנעוץ סיכה ידנית.");return}
     b.textContent="◎ מאתרים…";
     navigator.geolocation.getCurrentPosition(p=>{b.textContent="◎ המיקום שלי";const{latitude:la,longitude:lo}=p.coords;
-      if(setPin(la,lo)){const[X,Y]=px(la,lo);centerOn(X,Y,110)}else mvToast("נראה שאתם מחוץ לתל אביב-יפו. נעצו סיכה על המפה במקום.")},
+      if(setPin(la,lo)){const[X,Y]=px(la,lo);centerOn(X,Y,110);keepPinVisible()}else mvToast("נראה שאתם מחוץ לתל אביב-יפו. נעצו סיכה על המפה במקום.")},
       ()=>{b.textContent="◎ המיקום שלי";mvToast("לא קיבלנו גישה למיקום. אפשר לנעוץ סיכה על המפה או לבחור אזור.")},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})});
   $("#mapView").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.closest(".mvtools")||b.id==="mvGeo")return;const mm=st.mm;
     if(b.dataset.mode){mm.mode=b.dataset.mode;MV.lim=40}
@@ -922,6 +930,7 @@ function nearestPt(ux,uy,tolPx){if(!MVX)return null;const u=vb.w/(svgM().clientW
     else if(b.dataset.more){MV.lim+=40}
     else if(b.dataset.reach){mm.reach=!mm.reach}
     else if(b.dataset.pickclose){MV.pick=false}
+    else if(b.dataset.pickall){MV.pickAll=true}
     else return;
     save();renderMV()});
   $("#mapView").addEventListener("change",e=>{const t=e.target,mm=st.mm;if(t.id==="mvT")mm.t=+t.value;else if(t.id==="mvRt")mm.rt=t.value;else if(t.id==="mvSort")mm.sort=t.value;else return;MV.lim=40;save();renderMV()});
