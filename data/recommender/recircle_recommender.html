@@ -1,4 +1,5 @@
 <title>ReCircle בשבילך</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&display=swap">
@@ -9,7 +10,7 @@
   --bg:#f3f6f5; --surface:#ffffff; --ink:#1c2420; --muted:#56635d; --line:#dde3e0; --chip:#e8f0ee; --val:#0f5c63;
   --good:#1d7a4a; --good-bg:#e3f3ea; --warn:#9a5b00; --warn-bg:#fbefd9; --bad:#a8322d; --bad-bg:#fbe7e5;
   --c-sh:#0f5c63; --c-shr:#3f7fbf; --c-rep:#8a5a2b; --c-food:#c2410c; --c-nat:#3b8a3e; --c-art:#8e4bb0; --c-ss:#b8860b;
-  --sea:#bfdbe6; --road:#ffffff; --road-m:#f3cf86; --land:#e9eee9;
+  --sea:#bfdbe6; --road:#ffffff; --road-m:#f3cf86; --land:#e9eee9; --route:#1a5fc4; --reach:#e8890c;
   --f-ui:"Assistant",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
   --r:14px;
 }
@@ -17,13 +18,13 @@
   --teal:#0d4a50; --bg:#121816; --surface:#19201d; --ink:#e4ebe6; --muted:#a3b0aa; --line:#2b3530; --chip:#22302c; --val:#7fd0c4;
   --good:#6fd39b; --good-bg:#18352a; --warn:#f0b35a; --warn-bg:#3a2c14; --bad:#f19a92; --bad-bg:#3d1f1d;
   --c-sh:#5cc2c9; --c-shr:#7fb2e8; --c-rep:#d3a06d; --c-food:#f08a55; --c-nat:#7cc57f; --c-art:#c89ae0; --c-ss:#e2bd52;
-  --sea:#173847; --road:#34403b; --road-m:#6b5a2e; --land:#1d2522;
+  --sea:#173847; --road:#34403b; --road-m:#6b5a2e; --land:#1d2522; --route:#78b4ff; --reach:#f2a33a;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --teal:#0d4a50; --bg:#121816; --surface:#19201d; --ink:#e4ebe6; --muted:#a3b0aa; --line:#2b3530; --chip:#22302c; --val:#7fd0c4;
   --good:#6fd39b; --good-bg:#18352a; --warn:#f0b35a; --warn-bg:#3a2c14; --bad:#f19a92; --bad-bg:#3d1f1d;
   --c-sh:#5cc2c9; --c-shr:#7fb2e8; --c-rep:#d3a06d; --c-food:#f08a55; --c-nat:#7cc57f; --c-art:#c89ae0; --c-ss:#e2bd52;
-  --sea:#173847; --road:#34403b; --road-m:#6b5a2e; --land:#1d2522;
+  --sea:#173847; --road:#34403b; --road-m:#6b5a2e; --land:#1d2522; --route:#78b4ff; --reach:#f2a33a;
   color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15.5px;line-height:1.5;direction:rtl;margin:0}
@@ -184,11 +185,90 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
 .results{gap:22px}
 @media (prefers-reduced-motion:no-preference){.mc{animation:fade .25s ease both}}
 @media (prefers-reduced-motion:no-preference){.card{animation:fade .25s ease both}@keyframes fade{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}}
+/* view switch in the header */
+.views{margin-inline-start:auto;display:flex;gap:4px;background:rgba(255,255,255,.12);border-radius:999px;padding:4px}
+.views button{border:0;background:transparent;color:#fff;border-radius:999px;padding:7px 14px;font-weight:700;font-size:14.5px;white-space:nowrap}
+.views button[aria-pressed="true"]{background:#fff;color:var(--teal)}
+.views button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+@media (max-width:620px){header.band .wrap{flex-wrap:wrap}.views{margin-inline-start:0;width:100%}.views button{flex:1}}
+/* map-first mode */
+.mv{padding-block:18px 30px;display:flex;flex-direction:column;gap:12px}
+.mvbar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.mvbar .grpl{font-weight:700;font-size:13.5px;color:var(--muted);margin-inline-end:4px}
+.mvbar .blk{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font-weight:600;font-size:14px;display:inline-flex;gap:5px;align-items:center}
+.chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+.chip.cc[aria-pressed="true"]{background:var(--cc);border-color:var(--cc)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chip.cc[aria-pressed="true"]{color:#10140f}}
+:root[data-theme="dark"] .chip.cc[aria-pressed="true"]{color:#10140f}
+.chip:focus-visible,.li:focus-visible,.mvtools button:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.mvbar select{width:auto;padding:5px 8px}
+.mvgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);gap:14px;align-items:start}
+.mvmap{position:relative;height:max(440px,calc(100vh - 230px));border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--land)}
+.mvmap svg{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.mvmap svg.drag{cursor:grabbing}
+.mvmap svg:focus-visible{outline:3px solid var(--orange);outline-offset:-3px}
+.mvmap .osm path{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.mvmap .osm .sea,.mvmap .osm .wa{fill:var(--sea);stroke:none}
+.mvmap .osm .wl{stroke:var(--sea);stroke-width:calc(2.6px * var(--zs,1))}
+.mvmap .osm .r{stroke:var(--road);stroke-width:calc(.9px * var(--zs,1))}
+.mvmap .osm .s{stroke:var(--road);stroke-width:calc(1.8px * var(--zs,1))}
+.mvmap .osm .m{stroke:var(--road-m);stroke-width:calc(2.8px * var(--zs,1))}
+#mvReach{fill:none;stroke:var(--reach);stroke-opacity:.55;stroke-width:calc(2.2px * var(--zs,1));vector-effect:non-scaling-stroke;stroke-linecap:round}
+.rt path{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+.rt .cas{stroke:var(--surface);stroke-width:8px}.rt .ln{stroke:var(--route);stroke-width:4.5px}.rt .leg{stroke:var(--route);stroke-width:2.5px;stroke-dasharray:3 4}
+.pt{cursor:pointer}
+.mvtools{position:absolute;top:10px;inset-inline-end:10px;display:flex;flex-direction:column;gap:6px}
+.mvtools button,.mvloc button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;min-width:38px;height:38px;font-weight:800;font-size:18px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mvloc{position:absolute;top:10px;inset-inline-start:10px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 70px)}
+.mvloc button{font-size:14px;padding:0 12px;font-weight:700}
+.mvloc select{width:auto;height:38px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mvhint{position:absolute;inset-inline:0;bottom:36px;margin:auto;width:max-content;max-width:calc(100% - 24px);background:var(--ink);color:var(--surface);border-radius:999px;padding:8px 16px;font-weight:700;font-size:14.5px;pointer-events:none;text-align:center}
+.mvattr{position:absolute;bottom:0;inset-inline-start:0;font-size:11.5px;color:var(--muted);background:var(--surface);opacity:.92;padding:2px 8px;border-start-end-radius:8px}
+.mvattr a{color:inherit}
+.mvside{display:flex;flex-direction:column;gap:12px;min-width:0;max-height:max(440px,calc(100vh - 230px));overflow:auto;padding:1px}
+.mvsum{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.mvsum strong{font-size:18px;font-weight:800;display:block;line-height:1.3}
+.mvsum strong .big{color:var(--val);font-variant-numeric:tabular-nums}
+.mvsum p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+.mvlist{display:flex;flex-direction:column;gap:6px}
+.li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:start;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:9px 12px;width:100%}
+.li:hover,.li.hov{border-color:var(--cc)}
+.li[aria-current="true"]{box-shadow:0 0 0 2px var(--cc) inset;border-color:var(--cc)}
+.li .dot{width:10px;height:10px;border-radius:50%;background:var(--cc)}
+.li b{display:block;font-size:15px;font-weight:700;line-height:1.25;overflow-wrap:anywhere}
+.li small{display:block;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .lm{text-align:end;font-variant-numeric:tabular-nums}
+.li .lm b{color:var(--val);white-space:nowrap}
+.det{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--cc);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:9px}
+.det .dtop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.det h3{margin:0;font-size:19px;font-weight:800;line-height:1.25;overflow-wrap:anywhere}
+.det .x{border:0;background:var(--chip);color:var(--ink);border-radius:50%;width:30px;height:30px;font-size:17px;line-height:1}
+.tgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.tm{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:7px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+.tm i{font-style:normal;font-size:18px;line-height:1.1}
+.tm b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tm span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tm[aria-pressed="true"]{border-color:var(--route);box-shadow:0 0 0 1px var(--route) inset}
+.tm[aria-pressed="true"] b{color:var(--route)}
+.det .facts{grid-template-columns:1fr 1fr}
+.det .links{display:flex;flex-wrap:wrap;gap:6px}
+.det .links a{border:1px solid var(--line);border-radius:999px;padding:4px 12px;color:var(--val);font-weight:700;font-size:13.5px;text-decoration:none}
+.det .links a.pri{background:var(--route);border-color:var(--route);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .det .links a.pri{color:#0c1420}}
+:root[data-theme="dark"] .det .links a.pri{color:#0c1420}
+.howcalc{font-size:13px;color:var(--muted)}
+.howcalc summary{cursor:pointer;font-weight:700}
+.howcalc ul{margin:6px 0 0;padding-inline-start:18px}
+.sl{display:none}
+@media (max-width:620px){.mvbar{padding:10px;gap:8px}.mvbar .blk.scroll{flex-wrap:nowrap;overflow-x:auto;width:100%;scrollbar-width:none;padding:2px}.mvbar .chip{white-space:nowrap;flex:none}.mvbar .grpl.gl2,.fl{display:none}.sl{display:inline}}
+@media (max-width:860px){.mvgrid{grid-template-columns:1fr}.mvmap{height:62vh;min-height:340px}.mvside{max-height:none;overflow:visible}}
 </style>
 
 <header class="band"><div class="wrap">
   <div class="logo"><img src="data:image/png;base64,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" alt="ReCircle"></div>
   <div><h1>מה מתאים לך בתל אביב-יפו?</h1><p>ספרו לנו קצת על עצמכם, ונמליץ על עסקים, יוזמות ואירועים מקיימים לפי ההתאמה.</p></div>
+  <nav class="views" id="views" aria-label="תצוגה"><button type="button" data-view="profile" aria-pressed="true">המלצות בשבילי</button><button type="button" data-view="map" aria-pressed="false">חיפוש על המפה</button></nav>
 </div></header>
 
 <section class="wrap hidden" id="onbWrap" aria-live="polite"><div class="onb"><div class="qcard" id="qcard"></div></div></section>
@@ -243,7 +323,23 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
     <div id="list" class="results" aria-live="polite"></div>
   </section>
 </main>
-<footer class="wrap">המלצות לפי מאגר ReCircle v0.2 (303 רשומות ממקורות ציבוריים, תל אביב-יפו). רוב הרשומות עדיין לא אומתו, ומידע חסר מוצג כ"לא ידוע" ולא מנוחש. המרחק הוא קו אווירי ומחושב בדפדפן שלכם. הפרופיל נשמר רק בדפדפן הזה.</footer>
+
+<section class="wrap hidden" id="mapView">
+  <div class="mv">
+    <div class="mvbar" id="mvbar"></div>
+    <div class="mvgrid">
+      <div class="mvmap">
+        <svg id="mvsvg" tabindex="0" viewBox="0 0 300 330" role="application" aria-label="מפת תל אביב-יפו. לחיצה נועצת סיכה, גרירה מזיזה, גלגלת או צביטה מגדילות. החיצים מזיזים את המפה."><g id="mvBg"></g><path id="mvReach" d=""/><g id="mvRoute" class="rt"></g><g id="mvPts"></g><g id="mvPin"></g></svg>
+        <div class="mvloc"><button type="button" id="mvGeo">◎ המיקום שלי</button><select id="mvArea" aria-label="קפיצה לאזור"></select></div>
+        <div class="mvtools"><button type="button" data-z="in" aria-label="הגדלה">+</button><button type="button" data-z="out" aria-label="הקטנה">−</button><button type="button" data-z="fit" aria-label="כל העיר" style="font-size:15px">⤢</button></div>
+        <div class="mvhint" id="mvhint">לחצו על המפה כדי לנעוץ סיכה</div>
+        <div class="mvattr">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL)</div>
+      </div>
+      <aside class="mvside" aria-label="תוצאות על המפה"><div id="mvdet"></div><div id="mvsum" class="mvsum" aria-live="polite"></div><div id="mvlist" class="mvlist"></div></aside>
+    </div>
+  </div>
+</section>
+<footer class="wrap">המלצות לפי מאגר ReCircle v0.2 (303 רשומות ממקורות ציבוריים, תל אביב-יפו). רוב הרשומות עדיין לא אומתו, ומידע חסר מוצג כ"לא ידוע" ולא מנוחש. בתצוגת ההמלצות המרחק הוא קו אווירי. בחיפוש על המפה, זמני ההגעה הם הערכה לפי רשת הרחובות של OpenStreetMap, בלי תנועה בזמן אמת. הכול מחושב בדפדפן שלכם. הפרופיל נשמר רק בדפדפן הזה.</footer>
 
 <script>
 const CATS={SECOND_HAND:["יד שנייה ווינטג'","--c-sh"],SHARING:["שיתוף, השאלה והחלפה","--c-shr"],REPAIR:["תיקון ומחדוש","--c-rep"],FOOD_RESCUE:["הצלת מזון","--c-food"],NATURE_COMMUNITY:["טבע, גינות וקהילה","--c-nat"],ECO_ART:["אמנות, עיצוב ותרבות","--c-art"],SUSTAINABLE_SHOPPING:["קנייה מקיימת","--c-ss"]};
@@ -262,10 +358,11 @@ const AREAS=[["","בלי מיקום (לא לסנן לפי מרחק)"],["c","מר
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 let DATA=[], BYID={}, pin=null, shown=12;
-const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming",qf:"",fb:{up:[],down:[]}};
+const DEF={persona:"other",age:"",family:"",gender:"any",budget:"any",cats:[],area:"",maxd:3,rtype:"all",ev:"upcoming",qf:"",fb:{up:[],down:[]},view:"profile",mm:{mode:"walk",t:15,cats:[],rt:"all",sort:"time"}};
+const fresh=()=>JSON.parse(JSON.stringify(DEF));
 let st=load();
 
-function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;return Object.assign({},DEF,v)}}catch(e){}return Object.assign({},DEF)}
+function load(){try{const v=JSON.parse(localStorage.getItem("rc-profile")||"null");if(v){pin=v.pin||null;const o=Object.assign(fresh(),v);o.mm=Object.assign(fresh().mm,v.mm||{});return o}}catch(e){}return fresh()}
 function save(){try{localStorage.setItem("rc-profile",JSON.stringify(Object.assign({},st,{pin})))}catch(e){}}
 
 function seg(id,name,opts,type="radio"){
@@ -302,7 +399,7 @@ $("#profile").addEventListener("change",e=>{
   shown=12;syncForm();save();render();
 });
 $("#maxd").addEventListener("input",e=>{st.maxd=+e.target.value;shown=12;syncForm();save();render()});
-$("#reset").addEventListener("click",()=>{st=Object.assign({},DEF);pin=null;shown=12;save();openOnb()});
+$("#reset").addEventListener("click",()=>{st=fresh();pin=null;shown=12;save();openOnb()});
 
 /* ---- mini map (data points only, no tiles) ---- */
 const B={lat0:32.028,lat1:32.147,lon0:34.742,lon1:34.848};
@@ -311,7 +408,7 @@ const px=(lat,lon)=>[ (B.lon1-lon)/(B.lon1-B.lon0)*0+ (lon-B.lon0)/(B.lon1-B.lon
 const unpx=(x,y)=>[B.lat1-y/H*(B.lat1-B.lat0), B.lon0+x/W*(B.lon1-B.lon0)];
 function me(){if(st.area==="pin"&&pin)return pin;const a=AREAS.find(a=>a[0]===st.area&&a[2]);return a?{lat:a[2],lon:a[3]}:null}
 let OSMBG="";
-fetch("osm_bg.json").then(r=>r.json()).then(o=>{OSMBG=`<g class="osm" aria-hidden="true"><path class="sea" d="${o.sea}"/><path class="wa" d="${o.w}"/><path class="wl" d="${o.wl}"/><path class="r" d="${o.r}"/><path class="s" d="${o.s}"/><path class="m" d="${o.m}"/></g>`;if(DATA.length)render()}).catch(()=>{});
+fetch("osm_bg.json").then(r=>r.json()).then(o=>{OSMBG=`<g class="osm" aria-hidden="true"><path class="sea" d="${o.sea}"/><path class="wa" d="${o.w}"/><path class="wl" d="${o.wl}"/><path class="r" d="${o.r}"/><path class="s" d="${o.s}"/><path class="m" d="${o.m}"/></g>`;$("#mvBg").innerHTML=OSMBG;if(DATA.length)render()}).catch(()=>{});
 function drawMap(top){
   const m=me();const ids=new Set(top.map(r=>r.id));
   let s=`<rect x="0" y="0" width="${W}" height="${H}" fill="var(--land)"/>`+OSMBG;
@@ -386,7 +483,7 @@ function mini(x){
     <div class="meta">${esc(ACT[r.a]||TYPES[r.t]||"")}${x.d!=null?` · ${fmtD(x.d)} ממך`:r.lm==="ONLINE"?" · אונליין":""}${when?` · ${esc(when)}`:""}</div>
     <p class="mdesc">${esc(r.d)}</p>
     <div class="why">${good.concat(warn).map(([k,t])=>`<span class="${k}">${esc(t)}</span>`).join("")}</div>
-    <details class="mdet"><summary>פרטים ומקור</summary><dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}<div><dt>מקור</dt><dd>${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">${esc(r.sn||"קישור")} ↗</a>`:"לא צוין"}</dd></div></dl></details>
+    ${r.lat!=null?`<button type="button" class="btn sm ghost" data-onmap="${esc(r.id)}" style="align-self:flex-start;padding-inline:0">איך מגיעים? על המפה</button>`:""}<details class="mdet"><summary>פרטים ומקור</summary><dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}<div><dt>מקור</dt><dd>${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">${esc(r.sn||"קישור")} ↗</a>`:"לא צוין"}</dd></div></dl></details>
     <div class="react"><button type="button" class="rb up" data-fb="up" aria-pressed="${liked}">${liked?"שמרת ✓":"מתאים לי"}</button><button type="button" class="rb down" data-fb="down">פחות מתאים</button></div>
   </article>`;
 }
@@ -422,6 +519,7 @@ function render(){
       ${m&&st.maxd>0?`<button type="button" data-ref="closer">קרוב יותר</button>`:""}
       ${m&&st.maxd<5?`<button type="button" data-ref="farther">גם רחוק יותר</button>`:""}
       ${st.budget!=="low"?`<button type="button" data-ref="cheap">רק דברים זולים</button>`:`<button type="button" data-ref="anyprice">המחיר לא משנה</button>`}
+      <button type="button" data-ref="map">לחפש על המפה</button>
       <button type="button" data-ref="redo">לענות שוב על השאלון</button>
       ${fbN?`<button type="button" data-ref="clearfb">איפוס ${fbN} תגובות</button>`:""}
     </div>
@@ -455,6 +553,7 @@ $("#hero").addEventListener("click",e=>{
   if(b.dataset.qf!==undefined){st.qf=b.dataset.qf;toast=null}
   const r=b.dataset.ref;
   if(r==="redo"){openOnb();return}
+  if(r==="map"){showView("map");return}
   if(r==="closer")st.maxd=Math.max(0,st.maxd-1);
   if(r==="farther")st.maxd=Math.min(5,st.maxd+1);
   if(r==="cheap")st.budget="low";
@@ -464,6 +563,7 @@ $("#hero").addEventListener("click",e=>{
 });
 $("#list").addEventListener("click",e=>{
   const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.onmap){showView("map",b.dataset.onmap);return}
   if(b.dataset.grp){const g=b.dataset.grp;openGroups.has(g)?openGroups.delete(g):openGroups.add(g);render();return}
   if(b.dataset.dropcat){const c=b.dataset.dropcat;const prev=st.cats.slice();st.cats=st.cats.filter(x=>x!==c);toast={t:`הסרנו את "${CATS[c][0]}" מתחומי העניין.`,undo:()=>{st.cats=prev}};syncForm();save();render();return}
   if(b.dataset.undo){if(toast&&toast.undo)toast.undo();toast=null;syncForm();save();render();return}
@@ -494,7 +594,7 @@ const STEPS=[
   {k:"sum"}
 ];
 let q=null, qi=0;
-function showApp(on){$("#onbWrap").classList.toggle("hidden",on);$("#app").classList.toggle("hidden",!on)}
+function showApp(on){$("#onbWrap").classList.toggle("hidden",on);$("#app").classList.toggle("hidden",!on);$("#mapView").classList.add("hidden");st.view="profile";document.querySelectorAll("#views button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view==="profile"))}
 function openOnb(){q=JSON.parse(JSON.stringify(st));if(!st.onb)q.persona="";qi=0;showApp(false);drawQ();window.scrollTo(0,0)}
 function finish(){if(!q.persona)q.persona="other";st=Object.assign({},q,{onb:true});if(st.area==="pin"&&!pin)st.area="";shown=12;save();showApp(true);syncForm();render();window.scrollTo(0,0)}
 function optBtn(k,v,l,sub,on,cc){return `<button type="button" class="opt" data-k="${k}" data-v="${v}" aria-pressed="${on}" ${cc?`style="--cc:var(${cc})"`:""}><b>${esc(l)}</b>${sub?`<span>${esc(sub)}</span>`:""}</button>`}
@@ -513,7 +613,7 @@ function howList(p){
 }
 function drawQ(){
   const S=STEPS[qi],n=STEPS.length-1,last=S.k==="sum";
-  let h=`<div class="qtop"><span>${last?"סיכום":`שאלה ${qi+1} מתוך ${n}`}</span>${last?"":`<button type="button" class="btn link" data-act="skip">דילוג ישר להמלצות</button>`}</div><div class="prog"><i style="width:${Math.round((last?n:qi)/n*100)}%"></i></div>`;
+  let h=`<div class="qtop"><span>${last?"סיכום":`שאלה ${qi+1} מתוך ${n}`}</span>${last?"":`<span><button type="button" class="btn link" data-act="map">חיפוש ישר על המפה</button> <button type="button" class="btn link" data-act="skip">דילוג ישר להמלצות</button></span>`}</div><div class="prog"><i style="width:${Math.round((last?n:qi)/n*100)}%"></i></div>`;
   if(S.opts){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p><div class="opts">${S.opts.map(([v,l,s])=>optBtn(S.k,v,l,s,q[S.k]===v)).join("")}</div>`}
   else if(S.groups){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p>`+S.groups.map(([k,l,o])=>`<div class="qgroup"><b>${l}</b><div class="opts">${o.map(([v,t])=>optBtn(k,v,t,"",q[k]===v)).join("")}</div></div>`).join("")}
   else if(S.many){h+=`<h2 class="qh">${S.h}</h2><p class="qsub">${S.sub}</p><div class="opts">${Object.entries(CATS).map(([k,[l,c]])=>optBtn("cats",k,l,"",q.cats.includes(k),c)).join("")}</div>`}
@@ -548,6 +648,7 @@ $("#qcard").addEventListener("click",e=>{
   if(act==="next"){qi=Math.min(qi+1,STEPS.length-1);drawQ();return}
   if(act==="back"){qi=Math.max(0,qi-1);drawQ();return}
   if(act==="skip"||act==="go"){finish();return}
+  if(act==="map"){showView("map");return}
   const k=b.dataset.k,v=b.dataset.v;if(!k)return;
   if(k==="cats"){q.cats=q.cats.includes(v)?q.cats.filter(c=>c!==v):q.cats.concat(v);drawQ();return}
   if(k==="maxd"){q.maxd=+v;drawQ();return}
@@ -557,7 +658,235 @@ $("#qcard").addEventListener("click",e=>{
   else q[k]=v;
   drawQ();setTimeout(()=>{if(STEPS[qi].k===k){qi++;drawQ()}},220);
 });
+/* ---- map-first mode: drop a pin (or use your location), see what is reachable and how long it takes ---- */
+const MODES={walk:["הליכה","🚶"],bike:["אופניים","🚲"],bus:["תחבורה ציבורית","🚌"],car:["רכב","🚗"]};
+const TIMES=[5,10,15,20,30,45,60];
+// minutes from street-network metres (walk graph) or car seconds; see the "how we estimate" note in the UI
+const TT={walk:m=>m/80,bike:m=>2+m/250,bus:m=>14+m/254,car:s=>5+s/60};
+const CARKMH=[65,45,32,28,25,18,12,0,18]; // by street class: motorway, trunk, primary, secondary, tertiary, residential, living, pedestrian, other
+const GMODE={walk:"walking",bike:"bicycling",bus:"transit",car:"driving"};
+let RT=null, PC=null, REACH={k:"",s:""};
+const MV={sel:null,hov:null,lim:40,msg:""};
+let vb={x:0,y:0,w:300,h:330};
+const svgM=()=>$("#mvsvg");
+const mDist=(la1,lo1,la2,lo2)=>Math.hypot((lo2-lo1)*94360,(la2-la1)*110570);
+
+function buildRT(o){
+  const n=o.n.length/2,m=o.e.length/4;
+  const lat=new Float64Array(n),lon=new Float64Array(n),sx=new Float32Array(n),sy=new Float32Array(n);
+  for(let i=0;i<n;i++){lon[i]=(o.n[2*i]+o.bx)/1e5;lat[i]=(o.n[2*i+1]+o.by)/1e5;const[x,y]=px(lat[i],lon[i]);sx[i]=x;sy[i]=y}
+  const ea=new Int32Array(m),eb=new Int32Array(m),el=new Float32Array(m),ec=new Uint8Array(m),ef=new Uint8Array(m),deg=new Int32Array(n+1),nf=new Uint8Array(n);
+  for(let k=0;k<m;k++){ea[k]=o.e[4*k];eb[k]=o.e[4*k+1];el[k]=o.e[4*k+2];ec[k]=o.e[4*k+3]>>2;ef[k]=o.e[4*k+3]&3;deg[ea[k]+1]++;deg[eb[k]+1]++;nf[ea[k]]|=ef[k];nf[eb[k]]|=ef[k]}
+  for(let i=0;i<n;i++)deg[i+1]+=deg[i];
+  const fill=deg.slice(0,n),an=new Int32Array(2*m),ae=new Int32Array(2*m);
+  for(let k=0;k<m;k++){an[fill[ea[k]]]=eb[k];ae[fill[ea[k]]++]=k;an[fill[eb[k]]]=ea[k];ae[fill[eb[k]]++]=k}
+  const es=new Array(m);
+  for(let k=0;k<m;k++){let x=o.n[2*ea[k]],y=o.n[2*ea[k]+1],s=`M${sx[ea[k]].toFixed(1)},${sy[ea[k]].toFixed(1)}`;const g=o.g[k];
+    for(let j=0;j<g.length;j+=2){x+=g[j];y+=g[j+1];const[a,b]=px((y+o.by)/1e5,(x+o.bx)/1e5);s+=`L${a.toFixed(1)},${b.toFixed(1)}`}
+    es[k]=s+`L${sx[eb[k]].toFixed(1)},${sy[eb[k]].toFixed(1)}`}
+  const grid=new Map(),G=.0025;
+  for(let i=0;i<n;i++){const key=Math.floor(lat[i]/G)*1e5+Math.floor(lon[i]/G);let c=grid.get(key);if(!c)grid.set(key,c=[]);c.push(i)}
+  return {n,m,lat,lon,sx,sy,ea,eb,el,ec,ef,nf,st:deg,an,ae,es,grid,G};
+}
+function nearestNode(la,lo,flag){
+  const G=RT.G,ci=Math.floor(la/G),cj=Math.floor(lo/G);let best=-1,bd=Infinity;
+  for(let r=0;r<=3;r++){
+    for(let i=ci-r;i<=ci+r;i++)for(let j=cj-r;j<=cj+r;j++){if(Math.max(Math.abs(i-ci),Math.abs(j-cj))!==r)continue;const c=RT.grid.get(i*1e5+j);if(!c)continue;
+      for(const k of c){if(!(RT.nf[k]&flag))continue;const d=mDist(la,lo,RT.lat[k],RT.lon[k]);if(d<bd){bd=d;best=k}}}
+    if(best>=0&&r>=1)break;
+  }
+  return [best,bd];
+}
+function dijk(src,flag,car){
+  const n=RT.n,d=new Float64Array(n).fill(Infinity),pe=new Int32Array(n).fill(-1);
+  if(src<0)return {d,pe,src};
+  const hv=[],hn=[];
+  const push=(v,x)=>{let i=hv.length;hv.push(v);hn.push(x);while(i>0){const p=(i-1)>>1;if(hv[p]<=v)break;hv[i]=hv[p];hn[i]=hn[p];i=p}hv[i]=v;hn[i]=x};
+  const pop=()=>{const tv=hv[0],tn=hn[0],lv=hv.pop(),ln=hn.pop();if(hv.length){let i=0;const L=hv.length;for(;;){let c=2*i+1;if(c>=L)break;if(c+1<L&&hv[c+1]<hv[c])c++;if(hv[c]>=lv)break;hv[i]=hv[c];hn[i]=hn[c];i=c}hv[i]=lv;hn[i]=ln}return [tv,tn]};
+  d[src]=0;push(0,src);
+  while(hv.length){const[du,u]=pop();if(du>d[u])continue;
+    for(let k=RT.st[u];k<RT.st[u+1];k++){const e=RT.ae[k];if(!(RT.ef[e]&flag))continue;const w=car?RT.el[e]/(CARKMH[RT.ec[e]]/3.6):RT.el[e];const v=RT.an[k],nd=du+w;if(nd<d[v]){d[v]=nd;pe[v]=e;push(nd,v)}}}
+  return {d,pe,src};
+}
+function snapAll(){if(!RT||!DATA.length)return;for(const r of DATA)if(r.lat!=null){r._w=nearestNode(r.lat,r.lon,1);r._c=nearestNode(r.lat,r.lon,2)}}
+function origin(){return me()}
+function pinCalc(){
+  const o=origin();if(!RT||!o)return null;const key=o.lat.toFixed(6)+","+o.lon.toFixed(6);if(PC&&PC.key===key)return PC;
+  const[wi,wd]=nearestNode(o.lat,o.lon,1),[ci,cd]=nearestNode(o.lat,o.lon,2);
+  PC={key,far:wd>500,w:Object.assign(dijk(wi,1,false),{off:wd}),c:Object.assign(dijk(ci,2,true),{off:cd})};return PC;
+}
+function metr(r,o,P){
+  const air=mDist(o.lat,o.lon,r.lat,r.lon);let wm,cs,approx=false;
+  if(P&&!P.far&&r._w&&r._w[1]<400&&isFinite(P.w.d[r._w[0]]))wm=P.w.off+P.w.d[r._w[0]]+r._w[1];else{wm=air*1.3;approx=true}
+  if(P&&!P.far&&r._c&&r._c[1]<500&&isFinite(P.c.d[r._c[0]]))cs=P.c.d[r._c[0]]+(P.c.off+r._c[1])/4.2;else cs=air*1.4/6.1;
+  wm=Math.max(wm,air);
+  return {air,wm,cs,approx,t:{walk:TT.walk(wm),bike:TT.bike(wm),bus:TT.bus(wm),car:TT.car(cs)}};
+}
+function reachPath(P,mode,t){
+  if(!P||P.far)return "";const k=P.key+mode+t;if(REACH.k===k)return REACH.s;
+  let arr,flag,lim;
+  if(mode==="car"){arr=P.c.d;flag=2;lim=(t-5)*60-P.c.off/4.2}else{arr=P.w.d;flag=1;lim=(mode==="walk"?t*80:mode==="bike"?(t-2)*250:(t-14)*254)-P.w.off}
+  let s="";if(lim>0)for(let e=0;e<RT.m;e++)if(RT.ef[e]&flag&&arr[RT.ea[e]]<=lim&&arr[RT.eb[e]]<=lim)s+=RT.es[e];
+  REACH={k,s};return s;
+}
+function routePath(P,r,mode){
+  if(!P||P.far)return null;const car=mode==="car",g=car?P.c:P.w,sn=car?r._c:r._w;if(!sn||sn[0]<0||!isFinite(g.d[sn[0]]))return null;
+  let s="",v=sn[0],guard=0;while(v!==g.src&&guard++<1e5){const e=g.pe[v];if(e<0)break;s+=RT.es[e];v=RT.ea[e]===v?RT.eb[e]:RT.ea[e]}
+  return {s,a:[RT.sx[g.src],RT.sy[g.src]],b:[RT.sx[sn[0]],RT.sy[sn[0]]]};
+}
+const fmtMin=m=>{const r=Math.max(1,Math.round(m));return r<60?`${r} דק'`:`${Math.floor(r/60)} ש'${r%60?` ${r%60} דק'`:""}`};
+const fmtM=m=>m<1000?`${Math.round(m/50)*50} מ'`:`${(m/1000).toFixed(1)} ק"מ`;
+function mvItems(){
+  const mm=st.mm,o=origin(),P=pinCalc();
+  const items=[];
+  for(const r of DATA){if(r.lat==null)continue;
+    if(mm.cats.length&&!mm.cats.includes(r.c))continue;
+    if(mm.rt!=="all"&&r.t!==mm.rt)continue;
+    if(r.t==="EVENT"&&isDate(r.ed)&&r.ed<today&&st.ev==="upcoming")continue;
+    if((st.fb.down||[]).includes(r.id))continue;
+    const x={r};if(o){x.m=metr(r,o,P);x.tm=x.m.t[mm.mode];x.in=x.tm<=mm.t}
+    if(st.onb){const sc=score(r,null);x.s=sc?sc.s:null}
+    items.push(x)}
+  return {items,o,P};
+}
+function mvBar(){
+  const mm=st.mm,mine=st.onb&&st.cats.length;
+  const same=mine&&mm.cats.length===st.cats.length&&st.cats.every(c=>mm.cats.includes(c));
+  return `<div class="blk scroll" role="group" aria-label="איך מגיעים"><span class="grpl gl2">איך מגיעים</span>${Object.entries(MODES).map(([k,[l,i]])=>`<button type="button" class="chip" data-mode="${k}" aria-pressed="${mm.mode===k}"><span aria-hidden="true">${i}</span>${k==="bus"?`<span class="fl">${l}</span><span class="sl">תח"צ</span>`:l}</button>`).join("")}</div>
+  <div class="blk"><label class="grpl" for="mvT">עד</label><select id="mvT">${TIMES.map(t=>`<option value="${t}" ${mm.t===t?"selected":""}>${t} דקות</option>`).join("")}</select></div>
+  <div class="blk scroll" role="group" aria-label="תחומים"><span class="grpl gl2">תחומים</span><button type="button" class="chip" data-mcat="" aria-pressed="${!mm.cats.length}">הכול</button>${mine?`<button type="button" class="chip" data-mcat="mine" aria-pressed="${same}">התחומים שלי</button>`:""}${Object.entries(CATS).map(([k,[l,c]])=>`<button type="button" class="chip cc" style="--cc:var(${c})" data-mcat="${k}" aria-pressed="${mm.cats.includes(k)}">${esc(l)}</button>`).join("")}</div>
+  <div class="blk"><label class="grpl" for="mvRt">סוג</label><select id="mvRt">${[["all","הכול"],["BUSINESS","עסקים"],["EVENT","אירועים"],["INITIATIVE","יוזמות"]].map(([v,l])=>`<option value="${v}" ${mm.rt===v?"selected":""}>${l}</option>`).join("")}</select>
+  <label class="grpl" for="mvSort" style="margin-inline-start:8px">מיון</label><select id="mvSort"><option value="time" ${mm.sort==="time"?"selected":""}>הכי קרוב בזמן</option>${st.onb?`<option value="match" ${mm.sort==="match"?"selected":""}>הכי מתאים לי</option>`:""}</select></div>`;
+}
+function detHtml(x,o,P){
+  const r=x.r,[cl,cc]=CATS[r.c],mm=st.mm;
+  const facts=[["כתובת",r.ad||"לא צוין"],[r.t==="EVENT"?"מועד":"שעות",(r.t==="EVENT"&&isDate(r.ed)?r.ed.split("-").reverse().join(".")+(r.h?" · "+r.h:""):r.h)||"לא צוין"],["מחיר",r.pr||(r.pl&&r.pl!=="UNKNOWN"?PRICE[r.pl]:"לא צוין")]];
+  if(x.s!=null)facts.push(["התאמה לפרופיל",x.s+"%"]);
+  let h=`<div class="det" style="--cc:var(${cc})"><div class="dtop"><span class="pill cat">${esc(cl)}</span><button type="button" class="x" data-close="1" aria-label="סגירה">×</button></div>
+    <h3>${esc(r.n)}</h3><div class="meta">${esc(ACT[r.a]||TYPES[r.t]||"")}${r.sc?" · "+esc(r.sc):""}</div>`;
+  if(x.m){
+    h+=`<div class="tgrid" role="group" aria-label="זמן הגעה משוער">${Object.entries(MODES).map(([k,[l,i]])=>`<button type="button" class="tm" data-mode="${k}" aria-pressed="${mm.mode===k}"><i aria-hidden="true">${i}</i><b>${fmtMin(x.m.t[k])}</b><span>${l}</span></button>`).join("")}</div>
+    <p class="hint">${x.m.approx?`בערך ${fmtM(x.m.wm)} (הערכה לפי קו אווירי של ${fmtM(x.m.air)})`:`${fmtM(x.m.wm)} ברגל ברחובות, ${fmtM(x.m.air)} בקו אווירי`}${mm.mode==="bus"&&x.m.t.walk<=x.m.t.bus?". ברגל יוצא מהר יותר":""}</p>`;
+    const g=`https://www.google.com/maps/dir/?api=1&origin=${o.lat.toFixed(5)},${o.lon.toFixed(5)}&destination=${r.lat},${r.lon}&travelmode=${GMODE[mm.mode]}`;
+    h+=`<div class="links"><a class="pri" href="${esc(g)}" target="_blank" rel="noopener">מסלול ב-Google Maps ↗</a>${mm.mode==="car"?`<a href="https://waze.com/ul?ll=${r.lat},${r.lon}&navigate=yes" target="_blank" rel="noopener">Waze ↗</a>`:""}${r.u?`<a href="${esc(r.u)}" target="_blank" rel="noopener">מקור ↗</a>`:""}</div>`;
+  } else h+=`<p class="hint">נעצו סיכה על המפה כדי לראות כמה זמן לוקח להגיע.</p>${r.u?`<div class="links"><a href="${esc(r.u)}" target="_blank" rel="noopener">מקור ↗</a></div>`:""}`;
+  h+=`<p class="desc" style="font-size:14px">${esc(r.d)}</p><dl class="facts">${facts.map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></div>`;
+  return h;
+}
+let MVX=null;
+function renderMV(){
+  if($("#mapView").classList.contains("hidden"))return;
+  st.fb=st.fb||{up:[],down:[]};
+  const mm=st.mm,{items,o,P}=mvItems();MVX={items,o,P};
+  $("#mvbar").innerHTML=mvBar();
+  $("#mvArea").value=st.area==="pin"?"pin":st.area;
+  const L=MODES[mm.mode][0];
+  let list,sum;
+  if(!DATA.length){sum=`<strong>טוענים את המאגר…</strong>`;list=[]}
+  else if(!o){sum=`<strong>איפה מתחילים?</strong><p>לחצו על המפה כדי לנעוץ סיכה, השתמשו ב"המיקום שלי" או בחרו אזור. נראה מה אפשר להספיק להגיע אליו ב-${mm.t} דקות ${L}.</p>`;list=items.slice().sort((a,b)=>a.r.n.localeCompare(b.r.n,"he"))}
+  else{
+    list=items.filter(x=>x.in);const out=items.length-list.length;
+    list.sort(mm.sort==="match"?(a,b)=>(b.s??-1)-(a.s??-1)||a.tm-b.tm:(a,b)=>a.tm-b.tm);
+    sum=`<strong><span class="big">${list.length}</span> ${list.length===1?"מקום":"מקומות"} עד ${mm.t} דקות ${L} ${st.area==="pin"?"מהסיכה":"מ"+esc(AREAS.find(a=>a[0]===st.area)[1].split(" (")[0])}</strong>
+      <p>${out?`עוד ${out} רחוקים יותר מופיעים במפה בצבע חלש. `:""}${RT?(P&&P.far?"הסיכה רחוקה מרשת הרחובות שבמאגר, ולכן הזמנים לפי קו אווירי.":"הקווים הכתומים במפה הם הרחובות שאפשר להגיע אליהם בזמן הזה."):"טוענים את רשת הרחובות… בינתיים הזמנים לפי קו אווירי."}</p>
+      <details class="howcalc"><summary>איך חישבנו?</summary><ul><li>הליכה: 4.8 קמ"ש לאורך הרחובות.</li><li>אופניים: 15 קמ"ש, ועוד 2 דקות לקחת ולהחנות.</li><li>תחבורה ציבורית: הערכה גסה, בלי לוחות זמנים. 7 דקות הליכה לתחנה וממנה, 7 דקות המתנה ונסיעה של כ-16 קמ"ש.</li><li>רכב: מהירות ממוצעת לפי סוג הרחוב (18 עד 65 קמ"ש), ועוד 5 דקות לחניה. בלי פקקים ובלי כיווני תנועה.</li><li>רשת הרחובות: OpenStreetMap, חילוץ מ-14.11.2026.</li></ul></details>`;
+  }
+  $("#mvsum").innerHTML=sum;
+  const shownL=list.slice(0,MV.lim);
+  $("#mvlist").innerHTML=shownL.map(x=>{const r=x.r,[cl,cc]=CATS[r.c];return `<button type="button" class="li${MV.hov===r.id?" hov":""}" style="--cc:var(${cc})" data-sel="${esc(r.id)}" aria-current="${MV.sel===r.id}"><i class="dot"></i><span><b>${esc(r.n)}</b><small>${esc(cl)} · ${esc(ACT[r.a]||TYPES[r.t]||"")}${r.ad?" · "+esc(r.ad.replace(/, תל אביב-יפו$/,"")):""}</small></span><span class="lm">${x.m?`<b>${fmtMin(x.tm)}</b><small>${fmtM(mm.mode==="car"?x.m.wm:x.m.wm)}</small>`:x.s!=null?`<b>${x.s}%</b><small>התאמה</small>`:""}</span></button>`}).join("")
+    +(list.length>MV.lim?`<button type="button" class="btn more" data-more="1">הצגת עוד ${list.length-MV.lim}</button>`:"")
+    +(o&&DATA.length&&!list.length?`<div class="empty">אין כאן מקומות בטווח הזה. נסו זמן ארוך יותר, אמצעי תנועה אחר או תחומים נוספים.</div>`:"");
+  const sx=MV.sel&&items.find(x=>x.r.id===MV.sel);
+  $("#mvdet").innerHTML=sx?detHtml(sx,o,P):"";
+  $("#mvReach").setAttribute("d",o&&RT?reachPath(P,mm.mode,mm.t):"");
+  let rt="";
+  if(sx&&o){const R=RT&&routePath(P,sx.r,mm.mode),[ox,oy]=px(o.lat,o.lon),[tx,ty]=px(sx.r.lat,sx.r.lon);
+    if(R)rt=`<path class="cas" d="${R.s}"/><path class="ln" d="${R.s}"/><path class="leg" d="M${ox},${oy}L${R.a[0]},${R.a[1]}M${R.b[0]},${R.b[1]}L${tx},${ty}"/>`;
+    else rt=`<path class="leg" d="M${ox},${oy}L${tx},${ty}"/>`}
+  $("#mvRoute").innerHTML=rt;
+  $("#mvhint").classList.toggle("hidden",!!o);
+  drawPts();
+}
+function drawPts(){
+  if(!MVX)return;const el=svgM(),u=vb.w/(el.clientWidth||300);let s="",top="";
+  for(const x of MVX.items){const r=x.r,[X,Y]=px(r.lat,r.lon),sel=r.id===MV.sel,hov=r.id===MV.hov,on=!MVX.o||x.in;
+    const c=`<circle class="pt" data-id="${esc(r.id)}" cx="${X.toFixed(2)}" cy="${Y.toFixed(2)}" r="${((sel?8:hov?7:on?5:3)*u).toFixed(3)}" fill="var(${CATS[r.c][1]})" fill-opacity="${on||sel?1:.38}" stroke="var(--surface)" stroke-width="${((on||sel?1.6:.7)*u).toFixed(3)}"><title>${esc(r.n)}</title></circle>`;
+    if(sel||hov)top+=c+`<circle cx="${X.toFixed(2)}" cy="${Y.toFixed(2)}" r="${(12*u).toFixed(3)}" fill="none" stroke="var(${CATS[r.c][1]})" stroke-width="${(2*u).toFixed(3)}" pointer-events="none"/>`;else s+=c}
+  $("#mvPts").innerHTML=s+top;
+  const o=MVX.o;
+  if(o){const[X,Y]=px(o.lat,o.lon);$("#mvPin").innerHTML=`<g transform="translate(${X.toFixed(2)},${Y.toFixed(2)}) scale(${u.toFixed(4)})" pointer-events="none"><ellipse cx="0" cy="0" rx="6" ry="2.5" fill="#000" opacity=".25"/><path d="M0,0C-4,-7 -12,-13 -12,-22A12,12 0 1 1 12,-22C12,-13 4,-7 0,0Z" fill="var(--orange)" stroke="var(--surface)" stroke-width="2"/><circle cx="0" cy="-22" r="4.5" fill="var(--surface)"/></g>`}
+  else $("#mvPin").innerHTML="";
+}
+function applyVB(){const el=svgM();el.setAttribute("viewBox",`${vb.x.toFixed(2)} ${vb.y.toFixed(2)} ${vb.w.toFixed(2)} ${vb.h.toFixed(2)}`);el.style.setProperty("--zs",Math.min(2.6,Math.max(1,Math.sqrt(300/vb.w))).toFixed(2));drawPts()}
+function aspect(){const el=svgM();return (el.clientHeight||330)/(el.clientWidth||300)}
+function fitBox(x0,y0,x1,y1){const a=aspect();let w=Math.max(x1-x0,22),h=Math.max(y1-y0,22);if(h/w>a)w=h/a;else h=w*a;vb={x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2,w,h};applyVB()}
+const fitAll=()=>fitBox(0,0,300,330);
+function centerOn(X,Y,w){const a=aspect();w=w||vb.w;vb={x:X-w/2,y:Y-w*a/2,w,h:w*a};applyVB()}
+function ensureVisible(pts,snug){const pad=.12;const xs0=pts.map(p=>p[0]),ys0=pts.map(p=>p[1]),span=Math.max(Math.max(...xs0)-Math.min(...xs0),Math.max(...ys0)-Math.min(...ys0));if(!(snug&&span<vb.w*.22)&&pts.every(([X,Y])=>X>vb.x+vb.w*pad&&X<vb.x+vb.w*(1-pad)&&Y>vb.y+vb.h*pad&&Y<vb.y+vb.h*(1-pad)))return;
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),m=Math.max(x1-x0,y1-y0)*.25+6;fitBox(x0-m,y0-m,x1+m,y1+m)}
+function zoomAt(f,ux,uy){const nw=Math.min(420,Math.max(300/16,vb.w/f)),k=nw/vb.w;vb.x=ux-(ux-vb.x)*k;vb.y=uy-(uy-vb.y)*k;vb.w=nw;vb.h*=k;applyVB()}
+function toUser(cx,cy){const b=svgM().getBoundingClientRect();return [vb.x+(cx-b.left)/b.width*vb.w,vb.y+(cy-b.top)/b.height*vb.h]}
+function setPin(la,lo,msg){if(la<B.lat0-.01||la>B.lat1+.01||lo<B.lon0-.01||lo>B.lon1+.01){MV.msg="";return false}pin={lat:la,lon:lo};st.area="pin";MV.lim=40;save();renderMV();return true}
+function selectRec(id,scroll){MV.sel=id;renderMV();const x=MVX.items.find(x=>x.r.id===id);if(x){const pts=[px(x.r.lat,x.r.lon)];if(MVX.o)pts.push(px(MVX.o.lat,MVX.o.lon));ensureVisible(pts,!!MVX.o)}
+  if(scroll){const d=$("#mvdet");if(d.getBoundingClientRect().top<0||window.innerWidth<=860)d.scrollIntoView({block:"nearest",behavior:"smooth"})}}
+function nearestPt(ux,uy,tolPx){if(!MVX)return null;const u=vb.w/(svgM().clientWidth||300);let best=null,bd=tolPx*u;for(const x of MVX.items){const[X,Y]=px(x.r.lat,x.r.lon),d=Math.hypot(X-ux,Y-uy);if(d<bd){bd=d;best=x.r.id}}return best}
+(function initMapView(){
+  const el=svgM();
+  $("#mvArea").innerHTML=`<option value="" disabled>קפיצה לאזור…</option>`+AREAS.filter(a=>a[2]).map(a=>`<option value="${a[0]}">${esc(a[1].split(" (")[0])}</option>`).join("")+`<option value="pin" hidden>הסיכה שלי</option>`;
+  const ptrs=new Map();let drag=null,pinch=null,raf=0;
+  el.addEventListener("pointerdown",e=>{el.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ptrs.size===1)drag={x:e.clientX,y:e.clientY,vx:vb.x,vy:vb.y,moved:0,t:e.target};
+    else if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),vb0:Object.assign({},vb),mu:toUser((a[0]+b[0])/2,(a[1]+b[1])/2)};drag=null}});
+  el.addEventListener("pointermove",e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pinch&&ptrs.size===2){const[a,b]=[...ptrs.values()],f=Math.hypot(a[0]-b[0],a[1]-b[1])/pinch.d,v0=pinch.vb0,nw=Math.min(420,Math.max(300/16,v0.w/f)),k=nw/v0.w;vb={x:pinch.mu[0]-(pinch.mu[0]-v0.x)*k,y:pinch.mu[1]-(pinch.mu[1]-v0.y)*k,w:nw,h:v0.h*k}}
+    else if(drag){const bx=el.getBoundingClientRect(),dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved=Math.max(drag.moved,Math.hypot(dx,dy));if(drag.moved<5)return;el.classList.add("drag");vb.x=drag.vx-dx/bx.width*vb.w;vb.y=drag.vy-dy/bx.height*vb.h}
+    else return;
+    if(!raf)raf=requestAnimationFrame(()=>{raf=0;applyVB()})});
+  const end=e=>{if(!ptrs.has(e.pointerId))return;ptrs.delete(e.pointerId);el.classList.remove("drag");
+    if(drag&&drag.moved<5&&e.type==="pointerup"){const[ux,uy]=toUser(e.clientX,e.clientY);const id=(drag.t&&drag.t.dataset&&drag.t.dataset.id)||(e.pointerType==="touch"?nearestPt(ux,uy,10):null);
+      if(id)selectRec(id,true);else{const[la,lo]=unpx(ux,uy);setPin(la,lo)}}
+    if(ptrs.size<2)pinch=null;if(!ptrs.size)drag=null};
+  el.addEventListener("pointerup",end);el.addEventListener("pointercancel",end);
+  el.addEventListener("wheel",e=>{e.preventDefault();const[ux,uy]=toUser(e.clientX,e.clientY);zoomAt(Math.exp(-e.deltaY*(e.deltaMode?0.05:0.0022)),ux,uy)},{passive:false});
+  el.addEventListener("keydown",e=>{const s=vb.w*.15;const k={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
+    if(k){e.preventDefault();vb.x+=k[0];vb.y+=k[1];applyVB()}else if(e.key==="+"||e.key==="="){zoomAt(1.4,vb.x+vb.w/2,vb.y+vb.h/2)}else if(e.key==="-"){zoomAt(1/1.4,vb.x+vb.w/2,vb.y+vb.h/2)}});
+  document.querySelector(".mvtools").addEventListener("click",e=>{const z=e.target.closest("button")?.dataset.z;if(!z)return;if(z==="fit")fitAll();else zoomAt(z==="in"?1.5:1/1.5,vb.x+vb.w/2,vb.y+vb.h/2)});
+  $("#mvArea").addEventListener("change",e=>{st.area=e.target.value;MV.lim=40;save();renderMV();const o=origin();if(o){const[X,Y]=px(o.lat,o.lon);centerOn(X,Y,110)}});
+  $("#mvGeo").addEventListener("click",()=>{const b=$("#mvGeo");
+    if(!navigator.geolocation){mvToast("הדפדפן לא תומך באיתור מיקום. אפשר לנעוץ סיכה ידנית.");return}
+    b.textContent="◎ מאתרים…";
+    navigator.geolocation.getCurrentPosition(p=>{b.textContent="◎ המיקום שלי";const{latitude:la,longitude:lo}=p.coords;
+      if(setPin(la,lo)){const[X,Y]=px(la,lo);centerOn(X,Y,110)}else mvToast("נראה שאתם מחוץ לתל אביב-יפו. נעצו סיכה על המפה במקום.")},
+      ()=>{b.textContent="◎ המיקום שלי";mvToast("לא קיבלנו גישה למיקום. אפשר לנעוץ סיכה על המפה או לבחור אזור.")},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})});
+  $("#mapView").addEventListener("click",e=>{const b=e.target.closest("button");if(!b||b.closest(".mvtools")||b.id==="mvGeo")return;const mm=st.mm;
+    if(b.dataset.mode){mm.mode=b.dataset.mode;MV.lim=40}
+    else if(b.dataset.mcat!==undefined){const c=b.dataset.mcat;if(!c)mm.cats=[];else if(c==="mine")mm.cats=st.cats.slice();else mm.cats=mm.cats.includes(c)?mm.cats.filter(x=>x!==c):mm.cats.concat(c);MV.lim=40}
+    else if(b.dataset.sel){selectRec(b.dataset.sel,true);return}
+    else if(b.dataset.close){MV.sel=null}
+    else if(b.dataset.more){MV.lim+=40}
+    else return;
+    save();renderMV()});
+  $("#mapView").addEventListener("change",e=>{const t=e.target,mm=st.mm;if(t.id==="mvT")mm.t=+t.value;else if(t.id==="mvRt")mm.rt=t.value;else if(t.id==="mvSort")mm.sort=t.value;else return;MV.lim=40;save();renderMV()});
+  $("#mvlist").addEventListener("pointerover",e=>{const b=e.target.closest(".li");const id=b?b.dataset.sel:null;if(id!==MV.hov){MV.hov=id;drawPts()}});
+  $("#mvlist").addEventListener("pointerleave",()=>{MV.hov=null;drawPts()});
+  window.addEventListener("resize",()=>{if($("#mapView").classList.contains("hidden"))return;const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;centerOn(cx,cy,vb.w)});
+})();
+let mvT=0;function mvToast(t){const h=$("#mvhint");h.textContent=t;h.classList.remove("hidden");clearTimeout(mvT);mvT=setTimeout(()=>{h.textContent="לחצו על המפה כדי לנעוץ סיכה";h.classList.toggle("hidden",!!origin())},4500)}
+let mvFitted=false;
+function showView(v,selId){
+  st.view=v;save();
+  document.querySelectorAll("#views button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===v));
+  if(v==="map"){$("#onbWrap").classList.add("hidden");$("#app").classList.add("hidden");$("#mapView").classList.remove("hidden");
+    $("#mvBg").innerHTML=OSMBG;
+    if(selId)MV.sel=selId;
+    if(!mvFitted){mvFitted=true;const o=origin();if(o){const[X,Y]=px(o.lat,o.lon);centerOn(X,Y,120)}else fitAll()}else centerOn(vb.x+vb.w/2,vb.y+vb.h/2,vb.w);
+    renderMV();if(selId)selectRec(selId,false);window.scrollTo(0,0)}
+  else{$("#mapView").classList.add("hidden");if(st.onb){showApp(true);syncForm();render()}else openOnb()}
+}
+$("#views").addEventListener("click",e=>{const b=e.target.closest("button[data-view]");if(b)showView(b.dataset.view)});
+fetch("routing.json").then(r=>r.json()).then(o=>{RT=buildRT(o);PC=null;snapAll();renderMV()}).catch(()=>{});
+
 syncForm();
-if(st.onb){showApp(true);render()}else openOnb();
-fetch("records.json").then(r=>r.json()).then(d=>{DATA=d;BYID=Object.fromEntries(d.map(r=>[r.id,r]));render();if(q&&STEPS[qi].k==="sum")drawQ()}).catch(()=>{$("#list").innerHTML='<div class="empty">לא הצלחתי לטעון את נתוני המאגר. רעננו את העמוד.</div>'});
+if(st.view==="map")showView("map");else if(st.onb){showApp(true);render()}else openOnb();
+fetch("records.json").then(r=>r.json()).then(d=>{DATA=d;BYID=Object.fromEntries(d.map(r=>[r.id,r]));snapAll();render();renderMV();if(q&&STEPS[qi].k==="sum")drawQ()}).catch(()=>{$("#list").innerHTML='<div class="empty">לא הצלחתי לטעון את נתוני המאגר. רעננו את העמוד.</div>'});
 </script>
