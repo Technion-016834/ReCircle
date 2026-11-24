@@ -275,6 +275,9 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
 .steps ol{margin:8px 0 0;padding-inline-start:22px;display:flex;flex-direction:column;gap:5px;font-size:14px}
 .steps li span{color:var(--muted);font-size:12.5px;margin-inline-start:6px;font-variant-numeric:tabular-nums}
 @media (max-width:620px){.mvpick{inset-inline:8px;top:auto;bottom:8px;width:auto;max-height:62%}}
+.lbl text{font-family:var(--f-ui);paint-order:stroke;stroke:var(--land);stroke-linejoin:round;text-anchor:middle;pointer-events:none;user-select:none}
+.lbl .lh{font-weight:800;fill:var(--muted);letter-spacing:.02em;opacity:.9}
+.lbl .ls{font-weight:600;fill:var(--ink);opacity:.62}
 .howcalc{font-size:13px;color:var(--muted)}
 .howcalc summary{cursor:pointer;font-weight:700}
 .howcalc ul{margin:6px 0 0;padding-inline-start:18px}
@@ -347,7 +350,7 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
     <div class="mvbar" id="mvbar"></div>
     <div class="mvgrid">
       <div class="mvmap">
-        <svg id="mvsvg" tabindex="0" viewBox="0 0 300 330" role="application" aria-label="מפת תל אביב-יפו. לחיצה נועצת סיכה, גרירה מזיזה, גלגלת או צביטה מגדילות. החיצים מזיזים את המפה."><g id="mvBg"></g><path id="mvReach" d=""/><g id="mvRoute" class="rt"></g><g id="mvPts"></g><g id="mvPin"></g></svg>
+        <svg id="mvsvg" tabindex="0" viewBox="0 0 300 330" role="application" aria-label="מפת תל אביב-יפו. לחיצה נועצת סיכה, גרירה מזיזה, גלגלת או צביטה מגדילות. החיצים מזיזים את המפה."><g id="mvBg"></g><g id="mvLbl"></g><path id="mvReach" d=""/><g id="mvRoute" class="rt"></g><g id="mvPts"></g><g id="mvPin"></g></svg>
         <div class="mvloc"><button type="button" id="mvGeo">◎ המיקום שלי</button><select id="mvArea" aria-label="קפיצה לאזור"></select></div>
         <div class="mvtools"><button type="button" data-z="in" aria-label="הגדלה">+</button><button type="button" data-z="out" aria-label="הקטנה">−</button><button type="button" data-z="fit" aria-label="כל העיר" style="font-size:15px">⤢</button></div>
         <div class="mvpick hidden" id="mvpick" role="dialog" aria-label="מקומות מומלצים ליד הסיכה"></div>
@@ -428,10 +431,32 @@ const unpx=(x,y)=>[B.lat1-y/H*(B.lat1-B.lat0), B.lon0+x/W*(B.lon1-B.lon0)];
 function me(){if(st.area==="pin"&&pin)return pin;const a=AREAS.find(a=>a[0]===st.area&&a[2]);return a?{lat:a[2],lon:a[3]}:null}
 let OSMBG="";
 fetch("osm_bg.json").then(r=>r.json()).then(o=>{OSMBG=`<g class="osm" aria-hidden="true"><path class="sea" d="${o.sea}"/><path class="wa" d="${o.w}"/><path class="wl" d="${o.wl}"/><path class="r" d="${o.r}"/><path class="s" d="${o.s}"/><path class="m" d="${o.m}"/></g>`;$("#mvBg").innerHTML=OSMBG;if(DATA.length)render()}).catch(()=>{});
+/* ---- map labels: a few neighbourhood and street names, chosen per zoom and never overlapping ---- */
+let LBL=null;
+fetch("labels.json").then(r=>r.json()).then(o=>{const S=o.streets,st_=[];for(let i=0;i<S.length;i+=6)st_.push({n:o.names[S[i]],c:S[i+1],x:S[i+2],y:S[i+3],a:S[i+4],fit:S[i+5]});
+  LBL={hoods:o.hoods.map(h=>({n:h[0],x:h[1],y:h[2]})),streets:st_};if(DATA.length)render();if(!$("#mapView").classList.contains("hidden"))applyVB()}).catch(()=>{});
+// v: visible box in viewBox units, ppu: screen px per unit. Returns SVG text drawn in viewBox units.
+function placeLabels(v,ppu,o){
+  if(!LBL)return "";const s=1/ppu,boxes=(o.avoid||[]).map(([x,y,r])=>[x-r,y-r,x+r,y+r]),out=[],byName={};
+  const pad=o.pad??10;const hit=(b)=>boxes.some(q=>b[0]<q[2]&&b[2]>q[0]&&b[1]<q[3]&&b[3]>q[1]);
+  const put=(l,fs,cls,ang,tw)=>{const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu;if(sx<tw/2||sy<fs||sx>v.w*ppu-tw/2||sy>v.h*ppu-fs)return false;
+    const r=ang*Math.PI/180,c=Math.abs(Math.cos(r)),si=Math.abs(Math.sin(r)),hw=(tw*c+fs*si)/2+pad,hh=(tw*si+fs*c)/2+pad/2,b=[sx-hw,sy-hh,sx+hw,sy+hh];
+    if(hit(b))return false;boxes.push(b);
+    out.push(`<text class="${cls}" font-size="${(fs*s).toFixed(3)}" stroke-width="${(3.2*s).toFixed(3)}" transform="translate(${l.x} ${l.y})${ang?` rotate(${ang})`:""}" dy="${(fs*.35*s).toFixed(3)}">${esc(l.n)}</text>`);return true};
+  // neighbourhoods first while the map shows a wide area, streets first when zoomed in close
+  const hoods=()=>{let n=0;if(ppu>o.hoodMaxPpu)return;for(const h of LBL.hoods){if(n>=o.maxH)break;const fs=o.hoodFs;if(put(h,fs,"lh",0,h.n.length*fs*.55+4))n++}};
+  const streets=()=>{let n=0;const minP=o.streetMinPpu;if(!minP)return;
+    for(const l of LBL.streets){if(n>=o.maxS)break;if(ppu<minP[l.c])continue;const fs=l.c===0?11.5:11;const tw=l.n.length*fs*.55+6;if(l.fit*ppu<tw)continue;
+      const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu,same=byName[l.n]||(byName[l.n]=[]);if(same.some(q=>Math.hypot(q[0]-sx,q[1]-sy)<320))continue;
+      if(put(l,fs,"ls",l.a,tw)){same.push([sx,sy]);n++}}};
+  if(ppu>6){streets();hoods()}else{hoods();streets()}
+  return `<g class="lbl" aria-hidden="true">${out.join("")}</g>`;
+}
 function drawMap(top){
   const m=me();const ids=new Set(top.map(r=>r.id));
   let s=`<rect x="0" y="0" width="${W}" height="${H}" fill="var(--land)"/>`+OSMBG;
   s+=`<text x="28" y="${H*0.3}" font-size="12" font-weight="700" fill="var(--muted)" font-family="var(--f-ui)" text-anchor="middle">הים</text>`;
+  {const mw=$("#map").clientWidth||300,m0=me();s+=placeLabels({x:0,y:0,w:W,h:H},mw/W,{maxH:6,maxS:0,hoodFs:10.5,hoodMaxPpu:99,pad:8,avoid:m0?[[...px(m0.lat,m0.lon).map(v=>v*mw/W),16]]:[]})}
   for(const r of DATA){if(r.lat==null)continue;const[x,y]=px(r.lat,r.lon);const hit=ids.has(r.id);
     s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${hit?4.2:2.1}" fill="var(${CATS[r.c][1]})" fill-opacity="${hit?1:.35}" ${hit?'stroke="var(--surface)" stroke-width="1.2"':''}/>`}
   if(m){const[x,y]=px(m.lat,m.lon);const km=DISTS[st.maxd];
@@ -864,7 +889,7 @@ function renderMV(){
     else rt=`<path class="leg" d="M${ox},${oy}L${tx},${ty}"/>`}
   $("#mvRoute").innerHTML=rt;
   $("#mvhint").classList.toggle("hidden",!!o);
-  drawPts();
+  drawPts();drawMvLabels();
 }
 function drawPts(){
   if(!MVX)return;const el=svgM(),u=vb.w/(el.clientWidth||300);let s="",top="";
@@ -876,7 +901,15 @@ function drawPts(){
   if(o){const[X,Y]=px(o.lat,o.lon);$("#mvPin").innerHTML=`<g transform="translate(${X.toFixed(2)},${Y.toFixed(2)}) scale(${u.toFixed(4)})" pointer-events="none"><ellipse cx="0" cy="0" rx="6" ry="2.5" fill="#000" opacity=".25"/><path d="M0,0C-4,-7 -12,-13 -12,-22A12,12 0 1 1 12,-22C12,-13 4,-7 0,0Z" fill="var(--orange)" stroke="var(--surface)" stroke-width="2"/><circle cx="0" cy="-22" r="4.5" fill="var(--surface)"/></g>`}
   else $("#mvPin").innerHTML="";
 }
-function applyVB(){const el=svgM();el.setAttribute("viewBox",`${vb.x.toFixed(2)} ${vb.y.toFixed(2)} ${vb.w.toFixed(2)} ${vb.h.toFixed(2)}`);el.style.setProperty("--zs",Math.min(2.6,Math.max(1,Math.sqrt(300/vb.w))).toFixed(2));drawPts()}
+function applyVB(){const el=svgM();drawMvLabels();el.setAttribute("viewBox",`${vb.x.toFixed(2)} ${vb.y.toFixed(2)} ${vb.w.toFixed(2)} ${vb.h.toFixed(2)}`);el.style.setProperty("--zs",Math.min(2.6,Math.max(1,Math.sqrt(300/vb.w))).toFixed(2));drawPts()}
+let lblT=0;function drawMvLabels(){const el=svgM(),W_=el.clientWidth;if(!W_)return;const ppu=W_/vb.w,o=origin(),avoid=[];
+  if(o){const[X,Y]=px(o.lat,o.lon);avoid.push([(X-vb.x)*ppu,(Y-vb.y)*ppu-16,26])}
+  // keep names off the place markers so neither hides the other
+  // zoomed out, the main names sit above the (small) markers instead, so the central neighbourhoods stay named
+  const wide=ppu<4,g=$("#mvLbl");if(wide!==(g.dataset.top==="1")){g.dataset.top=wide?"1":"";wide?el.insertBefore(g,$("#mvPin")):el.insertBefore(g,$("#mvReach"))}
+  if(MVX&&!wide)for(const x of MVX.items){const[X,Y]=px(x.r.lat,x.r.lon),sx=(X-vb.x)*ppu,sy=(Y-vb.y)*ppu;if(sx>-10&&sy>-10&&sx<W_+10&&sy<W_*2)avoid.push([sx,sy,4])}
+  const dense=W_<500?.6:1;
+  $("#mvLbl").innerHTML=placeLabels(vb,ppu,{maxH:Math.round((ppu<4?7:ppu<9?9:6)*dense),maxS:Math.round((ppu<4?5:ppu<9?10:16)*dense),hoodFs:12.5,hoodMaxPpu:22,streetMinPpu:[2.2,4.5,9],avoid})}
 function aspect(){const el=svgM();return (el.clientHeight||330)/(el.clientWidth||300)}
 function fitBox(x0,y0,x1,y1){const a=aspect();let w=Math.max(x1-x0,22),h=Math.max(y1-y0,22);if(h/w>a)w=h/a;else h=w*a;vb={x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2,w,h};applyVB()}
 const fitAll=()=>fitBox(0,0,300,330);
