@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+*_backup_*.html
+.DS_Store
+~$*
