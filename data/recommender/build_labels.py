@@ -49,27 +49,65 @@ seen = set(); hoods = [h for h in hoods if not (h[0] in seen or seen.add(h[0]))]
 # ---- streets: one candidate per long, fairly straight stretch of a named way
 CLS = {'motorway': 0, 'trunk': 0, 'primary': 0, 'secondary': 1, 'tertiary': 1, 'residential': 2, 'living_street': 2, 'unclassified': 2, 'pedestrian': 2}
 st = json.load(open(sys.argv[2], encoding='utf-8'))
-total = collections.Counter(); cand = []
+# Every named street gets candidates: OSM ways of the same name are chained end to end, simplified, and each
+# straight run becomes one or more anchor points (every ~150 m on long runs) with its angle and usable length.
+# Short streets keep at least their longest run, so they show up once the map is zoomed in far enough.
+total = collections.Counter(); byname = collections.defaultdict(list)
 for _, hw, he, en, g in st['w']:
     nm = norm(he) or norm(en); c = CLS.get(hw)
     if not nm or c is None or len(g) < 2: continue
     pts = [P(x / 1e5, y / 1e5) for x, y in g]
-    cum = [0]
-    for a, b in zip(pts, pts[1:]): cum.append(cum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
-    L = cum[-1]; total[nm] += L
-    if L * M_PER_UNIT < 120: continue
-    def at(t):
-        s = t * L; k = 1
-        while k < len(cum) - 1 and cum[k] < s: k += 1
-        f = (s - cum[k - 1]) / ((cum[k] - cum[k - 1]) or 1)
-        return pts[k - 1][0] + (pts[k][0] - pts[k - 1][0]) * f, pts[k - 1][1] + (pts[k][1] - pts[k - 1][1]) * f
-    a, b, m = at(.2), at(.8), at(.5)
-    ang = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
-    if ang > 90: ang -= 180
-    if ang < -90: ang += 180
-    fit = math.hypot(b[0] - a[0], b[1] - a[1]) / 0.6 * 0.85      # straight run usable for text, in viewBox units
-    if not (0 <= m[0] <= W and 0 <= m[1] <= H): continue
-    cand.append([nm, c, round(m[0], 1), round(m[1], 1), round(ang), round(fit, 1)])
+    total[nm] += sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts, pts[1:]))
+    byname[nm].append((c, pts))
+key = lambda p: (round(p[0], 2), round(p[1], 2))
+def chains(parts):
+    ends = collections.defaultdict(list)
+    for i, (_, g) in enumerate(parts): ends[key(g[0])].append(i); ends[key(g[-1])].append(i)
+    used = set(); out = []
+    def take(p):
+        for j in ends[key(p)]:
+            if j not in used: used.add(j); return parts[j]
+    for i, (c, g) in enumerate(parts):
+        if i in used: continue
+        used.add(i); cur = list(g); cls = c
+        for _ in range(2):
+            while (nx := take(cur[-1])):
+                cls = min(cls, nx[0]); seg = nx[1] if key(nx[1][0]) == key(cur[-1]) else nx[1][::-1]; cur += seg[1:]
+            cur.reverse()
+        out.append((cls, cur))
+    return out
+def dp(pts, tol):
+    if len(pts) < 3: return pts
+    keep = [False] * len(pts); keep[0] = keep[-1] = True; stack = [(0, len(pts) - 1)]
+    while stack:
+        a, b = stack.pop(); (ax, ay), (bx, by) = pts[a], pts[b]; L = math.hypot(bx - ax, by - ay); best, bi = -1, -1
+        for i in range(a + 1, b):
+            px_, py_ = pts[i]; d = abs((bx - ax) * (ay - py_) - (by - ay) * (ax - px_)) / L if L else math.hypot(px_ - ax, py_ - ay)
+            if d > best: best, bi = d, i
+        if best > tol: keep[bi] = True; stack += [(a, bi), (bi, b)]
+    return [p for p, k in zip(pts, keep) if k]
+MIN_RUN = 25 / M_PER_UNIT; STEP = 150 / M_PER_UNIT
+cand = []
+for nm, parts in byname.items():
+    runs = []
+    for c, g in chains(parts):
+        g = dp(g, 0.12)                                             # ~4 m: a street that bends less than that counts as straight
+        for a, b in zip(g, g[1:]):
+            L = math.hypot(b[0] - a[0], b[1] - a[1])
+            if L > 0: runs.append((L, c, a, b))
+    if not runs: continue
+    runs.sort(key=lambda r: -r[0])
+    for k, (L, c, a, b) in enumerate(runs):
+        if L < MIN_RUN and k: break
+        ang = math.degrees(math.atan2(b[1] - a[1], b[0] - a[0]))
+        if ang > 90: ang -= 180
+        if ang < -90: ang += 180
+        n = max(1, int(L / STEP))
+        for i in range(n):
+            t = (i + .5) / n; x, y = a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t
+            if not (0 <= x <= W and 0 <= y <= H): continue
+            fit = 2 * min(t, 1 - t) * L if n > 1 else L          # room for the text along the run, centred on the anchor
+            cand.append([nm, c, round(x, 1), round(y, 1), round(ang), round(fit, 1)])
 # order: class, then how long the street is overall (famous long streets first), then this stretch's straight run
 cand.sort(key=lambda r: (r[1], -total[r[0]], -r[5]))
 names = []; nix = {}

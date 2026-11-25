@@ -277,7 +277,10 @@ footer{color:var(--muted);font-size:12.5px;padding-block:0 30px}
 @media (max-width:620px){.mvpick{inset-inline:8px;top:auto;bottom:8px;width:auto;max-height:62%}}
 .lbl text{font-family:var(--f-ui);paint-order:stroke;stroke:var(--land);stroke-linejoin:round;text-anchor:middle;pointer-events:none;user-select:none}
 .lbl .lh{font-weight:800;fill:var(--muted);letter-spacing:.02em;opacity:.9}
-.lbl .ls{font-weight:600;fill:var(--ink);opacity:.62}
+.lbl .ls{fill:var(--ink)}
+.lbl .ls0{font-weight:700;opacity:.78}
+.lbl .ls1{font-weight:600;opacity:.68}
+.lbl .ls2{font-weight:500;opacity:.58}
 .howcalc{font-size:13px;color:var(--muted)}
 .howcalc summary{cursor:pointer;font-weight:700}
 .howcalc ul{margin:6px 0 0;padding-inline-start:18px}
@@ -436,19 +439,32 @@ let LBL=null;
 fetch("labels.json").then(r=>r.json()).then(o=>{const S=o.streets,st_=[];for(let i=0;i<S.length;i+=6)st_.push({n:o.names[S[i]],c:S[i+1],x:S[i+2],y:S[i+3],a:S[i+4],fit:S[i+5]});
   LBL={hoods:o.hoods.map(h=>({n:h[0],x:h[1],y:h[2]})),streets:st_};if(DATA.length)render();if(!$("#mapView").classList.contains("hidden"))applyVB()}).catch(()=>{});
 // v: visible box in viewBox units, ppu: screen px per unit. Returns SVG text drawn in viewBox units.
+// Text widths are measured, not guessed, so the collision boxes match what is drawn.
+const LBLCTX=document.createElement("canvas").getContext("2d"),LBLW=new Map();let LBLF="";
+function textW(t,fs,wt){const k=wt+"|"+fs+"|"+t;let w=LBLW.get(k);if(w==null){LBLF||=getComputedStyle(document.body).getPropertyValue("--f-ui").trim()||"sans-serif";LBLCTX.font=`${wt} ${fs}px ${LBLF}`;w=LBLCTX.measureText(t).width;LBLW.set(k,w)}return w}
+// street hierarchy: main roads larger and darker, local streets smaller and lighter
+const LS=[{fs:12.5,wt:700,cls:"ls ls0"},{fs:11.5,wt:600,cls:"ls ls1"},{fs:10.5,wt:500,cls:"ls ls2"}];
 function placeLabels(v,ppu,o){
-  if(!LBL)return "";const s=1/ppu,boxes=(o.avoid||[]).map(([x,y,r])=>[x-r,y-r,x+r,y+r]),out=[],byName={};
-  const pad=o.pad??10;const hit=(b)=>boxes.some(q=>b[0]<q[2]&&b[2]>q[0]&&b[1]<q[3]&&b[3]>q[1]);
-  const put=(l,fs,cls,ang,tw)=>{const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu;if(sx<tw/2||sy<fs||sx>v.w*ppu-tw/2||sy>v.h*ppu-fs)return false;
-    const r=ang*Math.PI/180,c=Math.abs(Math.cos(r)),si=Math.abs(Math.sin(r)),hw=(tw*c+fs*si)/2+pad,hh=(tw*si+fs*c)/2+pad/2,b=[sx-hw,sy-hh,sx+hw,sy+hh];
-    if(hit(b))return false;boxes.push(b);
+  if(!LBL)return "";const s=1/ppu,out=[],byName={},VW=v.w*ppu,VH=v.h*ppu;
+  // placed boxes are oriented rectangles {x,y,ux,uy,hw,hh}; a coarse grid keeps the overlap test fast with hundreds of names
+  const G=64,grid=new Map(),cells=(b)=>{const r=Math.hypot(b.hw,b.hh),a=[];for(let gx=Math.floor((b.x-r)/G);gx<=Math.floor((b.x+r)/G);gx++)for(let gy=Math.floor((b.y-r)/G);gy<=Math.floor((b.y+r)/G);gy++)a.push(gx+","+gy);return a};
+  const proj=(b,ax,ay)=>b.hw*Math.abs(b.ux*ax+b.uy*ay)+b.hh*Math.abs(-b.uy*ax+b.ux*ay);
+  const sep=(a,b)=>{const dx=b.x-a.x,dy=b.y-a.y;for(const[ax,ay]of[[a.ux,a.uy],[-a.uy,a.ux],[b.ux,b.uy],[-b.uy,b.ux]])if(Math.abs(dx*ax+dy*ay)>proj(a,ax,ay)+proj(b,ax,ay))return true;return false};
+  const hit=(b)=>{for(const k of cells(b)){const L=grid.get(k);if(L)for(const q of L)if(!sep(b,q))return true}return false};
+  const add=(b)=>{for(const k of cells(b)){let L=grid.get(k);if(!L)grid.set(k,L=[]);L.push(b)}};
+  for(const[x,y,r]of(o.avoid||[]))add({x,y,ux:1,uy:0,hw:r,hh:r});
+  const pad=o.pad??10;
+  const put=(l,fs,wt,cls,ang,tw,pd)=>{const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu;if(sx<tw/2||sy<fs||sx>VW-tw/2||sy>VH-fs)return false;
+    const r=ang*Math.PI/180,b={x:sx,y:sy,ux:Math.cos(r),uy:Math.sin(r),hw:tw/2+pd,hh:fs*.62+pd/2};
+    if(hit(b))return false;add(b);
     out.push(`<text class="${cls}" font-size="${(fs*s).toFixed(3)}" stroke-width="${(3.2*s).toFixed(3)}" transform="translate(${l.x} ${l.y})${ang?` rotate(${ang})`:""}" dy="${(fs*.35*s).toFixed(3)}">${esc(l.n)}</text>`);return true};
   // neighbourhoods first while the map shows a wide area, streets first when zoomed in close
-  const hoods=()=>{let n=0;if(ppu>o.hoodMaxPpu)return;for(const h of LBL.hoods){if(n>=o.maxH)break;const fs=o.hoodFs;if(put(h,fs,"lh",0,h.n.length*fs*.55+4))n++}};
-  const streets=()=>{let n=0;const minP=o.streetMinPpu;if(!minP)return;
-    for(const l of LBL.streets){if(n>=o.maxS)break;if(ppu<minP[l.c])continue;const fs=l.c===0?11.5:11;const tw=l.n.length*fs*.55+6;if(l.fit*ppu<tw)continue;
-      const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu,same=byName[l.n]||(byName[l.n]=[]);if(same.some(q=>Math.hypot(q[0]-sx,q[1]-sy)<320))continue;
-      if(put(l,fs,"ls",l.a,tw)){same.push([sx,sy]);n++}}};
+  const hoods=()=>{let n=0;if(ppu>o.hoodMaxPpu)return;for(const h of LBL.hoods){if(n>=o.maxH)break;const fs=o.hoodFs;if(put(h,fs,800,"lh",0,textW(h.n,fs,800)+4,pad))n++}};
+  const streets=()=>{let n=0;const minP=o.streetMinPpu;if(!minP)return;const m=40/ppu,x0=v.x-m,y0=v.y-m,x1=v.x+v.w+m,y1=v.y+v.h+m,rep=o.repeat??300;
+    for(const l of LBL.streets){if(n>=o.maxS)break;if(ppu<minP[l.c]||l.x<x0||l.x>x1||l.y<y0||l.y>y1)continue;const st=LS[l.c],tw=textW(l.n,st.fs,st.wt)+4;if(l.fit*ppu<tw)continue;
+      // the same street is named again only after a clear gap along it
+      const sx=(l.x-v.x)*ppu,sy=(l.y-v.y)*ppu,same=byName[l.n]||(byName[l.n]=[]);if(same.some(q=>Math.hypot(q[0]-sx,q[1]-sy)<rep))continue;
+      if(put(l,st.fs,st.wt,st.cls,l.a,tw,o.spad??4)){same.push([sx,sy]);n++}}};
   if(ppu>6){streets();hoods()}else{hoods();streets()}
   return `<g class="lbl" aria-hidden="true">${out.join("")}</g>`;
 }
@@ -909,14 +925,15 @@ let lblT=0;function drawMvLabels(){const el=svgM(),W_=el.clientWidth;if(!W_)retu
   const wide=ppu<4,g=$("#mvLbl");if(wide!==(g.dataset.top==="1")){g.dataset.top=wide?"1":"";wide?el.insertBefore(g,$("#mvPin")):el.insertBefore(g,$("#mvReach"))}
   if(MVX&&!wide)for(const x of MVX.items){const[X,Y]=px(x.r.lat,x.r.lon),sx=(X-vb.x)*ppu,sy=(Y-vb.y)*ppu;if(sx>-10&&sy>-10&&sx<W_+10&&sy<W_*2)avoid.push([sx,sy,4])}
   const dense=W_<500?.6:1;
-  $("#mvLbl").innerHTML=placeLabels(vb,ppu,{maxH:Math.round((ppu<4?7:ppu<9?9:6)*dense),maxS:Math.round((ppu<4?5:ppu<9?10:16)*dense),hoodFs:12.5,hoodMaxPpu:22,streetMinPpu:[2.2,4.5,9],avoid})}
+  // zoomed out only the main roads are named; closer in every street that has room is, limited only by overlaps
+  $("#mvLbl").innerHTML=placeLabels(vb,ppu,{maxH:Math.round((ppu<4?7:ppu<9?9:6)*dense),maxS:ppu<4?Math.round(6*dense):ppu<8?Math.round(40*dense):1e4,hoodFs:12.5,hoodMaxPpu:22,streetMinPpu:[2.2,4,8],repeat:W_<500?240:300,avoid})}
 function aspect(){const el=svgM();return (el.clientHeight||330)/(el.clientWidth||300)}
 function fitBox(x0,y0,x1,y1){const a=aspect();let w=Math.max(x1-x0,22),h=Math.max(y1-y0,22);if(h/w>a)w=h/a;else h=w*a;vb={x:(x0+x1)/2-w/2,y:(y0+y1)/2-h/2,w,h};applyVB()}
 const fitAll=()=>fitBox(0,0,300,330);
 function centerOn(X,Y,w){const a=aspect();w=w||vb.w;vb={x:X-w/2,y:Y-w*a/2,w,h:w*a};applyVB()}
 function ensureVisible(pts,snug){const pad=.12;const xs0=pts.map(p=>p[0]),ys0=pts.map(p=>p[1]),span=Math.max(Math.max(...xs0)-Math.min(...xs0),Math.max(...ys0)-Math.min(...ys0));if(!(snug&&span<vb.w*.22)&&pts.every(([X,Y])=>X>vb.x+vb.w*pad&&X<vb.x+vb.w*(1-pad)&&Y>vb.y+vb.h*pad&&Y<vb.y+vb.h*(1-pad)))return;
   const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),m=Math.max(x1-x0,y1-y0)*.25+6;fitBox(x0-m,y0-m,x1+m,y1+m)}
-function zoomAt(f,ux,uy){const nw=Math.min(420,Math.max(300/16,vb.w/f)),k=nw/vb.w;vb.x=ux-(ux-vb.x)*k;vb.y=uy-(uy-vb.y)*k;vb.w=nw;vb.h*=k;applyVB()}
+function zoomAt(f,ux,uy){const nw=Math.min(420,Math.max(300/24,vb.w/f)),k=nw/vb.w;vb.x=ux-(ux-vb.x)*k;vb.y=uy-(uy-vb.y)*k;vb.w=nw;vb.h*=k;applyVB()}
 function toUser(cx,cy){const b=svgM().getBoundingClientRect();return [vb.x+(cx-b.left)/b.width*vb.w,vb.y+(cy-b.top)/b.height*vb.h]}
 function setPin(la,lo,msg){if(la<B.lat0-.01||la>B.lat1+.01||lo<B.lon0-.01||lo>B.lon1+.01){MV.msg="";return false}pin={lat:la,lon:lo};st.area="pin";MV.lim=40;MV.sel=null;MV.pick=true;MV.pickAll=false;save();renderMV();keepPinVisible();return true}
 // slide the map so the picker never hides the pin it belongs to
